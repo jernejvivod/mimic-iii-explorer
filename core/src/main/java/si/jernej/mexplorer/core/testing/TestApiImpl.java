@@ -14,6 +14,7 @@ import si.jernej.mexplorer.core.manager.PatientsManager;
 import si.jernej.mexplorer.core.processing.Wordification;
 import si.jernej.mexplorer.core.transform.ValueTransformer;
 
+
 @Stateless
 public class TestApiImpl implements TestApi
 {
