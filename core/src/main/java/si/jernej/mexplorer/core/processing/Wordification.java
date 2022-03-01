@@ -92,7 +92,7 @@ public class Wordification
                     // if property should be included as a word
                     if (entityNameToValueFields.containsKey(entityName) && entityNameToValueFields.get(entityName).contains(propertyDescriptor.getName()))
                     {
-                        wordsForEntity.add(String.format("%s_%s_%s", entityName, propertyDescriptor.getName(), nxtProperty).toLowerCase());
+                        wordsForEntity.add(String.format("%s_%s_%s", entityName, propertyDescriptor.getName(), valueTransformer.applyTransform(entityName, propertyDescriptor.getName(), nxtProperty)).toLowerCase());
                     }
                     // if property collection of linked entities
                     else if (nxtProperty instanceof Collection && !((Collection<?>) nxtProperty).isEmpty())

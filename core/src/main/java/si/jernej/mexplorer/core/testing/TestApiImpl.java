@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import si.jernej.mexplorer.core.api.v1.endpoint.TestApi;
 import si.jernej.mexplorer.core.manager.PatientsManager;
 import si.jernej.mexplorer.core.processing.Wordification;
+import si.jernej.mexplorer.core.transform.ValueTransformer;
 
 @Stateless
 public class TestApiImpl implements TestApi
@@ -42,18 +43,16 @@ public class TestApiImpl implements TestApi
                         "gender",
                         "dob",
                         "dod"
-                )),
-                Map.entry("IcuStayEntity", Set.of(
-                        "",
-                        "",
-                        ""
                 ))
         );
+
+        ValueTransformer valueTransformer = new ValueTransformer(val -> val instanceof String ? ((String) val).replace(' ', '@') : val);
+        valueTransformer.addTransform("AdmissionsEntity", "insurance", e -> ((String) e).toUpperCase());
 
         TypedQuery<Integer> query = patientsManager.getEntityManager().createQuery("SELECT e.hadmId from AdmissionsEntity e", Integer.class);
         List<Integer> resultList = query.getResultList();
 
-        List<String> wordify = wordification.wordify("AdmissionsEntity", "hadmId", resultList.get(0).toString(), tableNameToValueFields, null, Wordification.ConcatenationScheme.ONE);
+        List<String> wordify = wordification.wordify("AdmissionsEntity", "hadmId", resultList.get(0).toString(), tableNameToValueFields, valueTransformer, Wordification.ConcatenationScheme.ONE);
 
         return Response.noContent().build();
     }

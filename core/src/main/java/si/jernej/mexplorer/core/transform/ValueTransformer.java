@@ -10,10 +10,18 @@ import java.util.function.Function;
 public class ValueTransformer
 {
     private final Map<String, Map<String, Function<Object, ?>>> entityToPropertyToTransform;
+    private final Function<Object, ?> defaultTransform;
 
     public ValueTransformer()
     {
         this.entityToPropertyToTransform = new HashMap<>();
+        this.defaultTransform = val -> val;
+    }
+
+    public ValueTransformer(Function<Object, ?> defaultTransform)
+    {
+        this.entityToPropertyToTransform = new HashMap<>();
+        this.defaultTransform = defaultTransform;
     }
 
     /**
