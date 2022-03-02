@@ -10,7 +10,11 @@ public interface TestApi
 {
 
     @GET
-    @Path("doTest/{id}")
-    Response test(@PathParam("id") String id);
+    @Path("test-wordification/{id}")
+    Response testWordification(@PathParam("id") String id);
+
+    @GET
+    @Path("test-composite-column-creator/{id}")
+    Response testCompositeColumnCreator(@PathParam("id") String id);
 
 }

@@ -1,14 +1,18 @@
 package si.jernej.mexplorer.core.processing;
 
+import static si.jernej.mexplorer.core.util.Constants.COMPOSITE_TABLE_NAME;
+
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -18,6 +22,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
+import si.jernej.mexplorer.core.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.transform.ValueTransformer;
 
 @Stateless
@@ -26,9 +31,9 @@ public class Wordification
 
     /**
      * Enum used to specify which concatenation schema to use.
-     * {@code ZERO} means not to use any concatenations.
-     * {@code ONE} means to concatenate pairs of features.
-     * {@code TWO} means to concatenate triplets of features.
+     * {@code ZERO} means not to use any concatenations
+     * {@code ONE} means to concatenate pairs of features
+     * {@code TWO} means to concatenate triplets of features
      */
     public enum ConcatenationScheme
     {
@@ -47,9 +52,12 @@ public class Wordification
      * @param idField the id field in the root entity
      * @param idValue the value of the id field in the root entity
      * @param propertySpec specifies which properties of which entities to include in the Wordification algorithm
+     * @param valueTransformer {@link ValueTransformer} instance used to specify the value transformations
+     * @param compositeColumnCreator {@link CompositeColumnCreator} instance used to specify the creation of composite columns
+     * @param concatenationScheme {@link ConcatenationScheme} instance used to specify the word concatenations
      * @return {@code List} of obtained words for specified root entity
      */
-    public List<String> wordify(String rootEntity, String idField, String idValue, PropertySpec propertySpec, ValueTransformer valueTransformer, ConcatenationScheme concatenationScheme)
+    public List<String> wordify(String rootEntity, String idField, String idValue, PropertySpec propertySpec, ValueTransformer valueTransformer, CompositeColumnCreator compositeColumnCreator, ConcatenationScheme concatenationScheme)
     {
 
         // list of resulting words
@@ -125,6 +133,14 @@ public class Wordification
         {
             e.printStackTrace();
         }
+
+        // Add values from composite columns.
+        Map<String, List<Object>> compositeColumns = compositeColumnCreator.processEntries(Collections.singletonList(root));
+        List<String> wordsForComposite = new ArrayList<>();
+        compositeColumns.forEach((k, l) -> l.forEach(v -> wordsForComposite.add(String.format("%s_%s_%s", COMPOSITE_TABLE_NAME, k, valueTransformer.applyTransform(COMPOSITE_TABLE_NAME, k, v)).toLowerCase())));
+
+        // Add all words and concatenations for composite table to results list.
+        wordsAll.addAll(addConcatenations(wordsForComposite, concatenationScheme));
 
         return wordsAll;
     }
