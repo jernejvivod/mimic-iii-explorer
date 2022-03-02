@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -47,10 +46,10 @@ public class Wordification
      * @param rootEntity the root entity for which to compute the results of Wordification
      * @param idField the id field in the root entity
      * @param idValue the value of the id field in the root entity
-     * @param entityNameToValueFields mapping of table names to properties for which to construct the features
+     * @param propertySpec specifies which properties of which entities to include in the Wordification algorithm
      * @return {@code List} of obtained words for specified root entity
      */
-    public List<String> wordify(String rootEntity, String idField, String idValue, Map<String, Set<String>> entityNameToValueFields, ValueTransformer valueTransformer, ConcatenationScheme concatenationScheme)
+    public List<String> wordify(String rootEntity, String idField, String idValue, PropertySpec propertySpec, ValueTransformer valueTransformer, ConcatenationScheme concatenationScheme)
     {
 
         // list of resulting words
@@ -90,7 +89,7 @@ public class Wordification
                     Object nxtProperty = propertyDescriptor.getReadMethod().invoke(nxt);
 
                     // if property should be included as a word
-                    if (entityNameToValueFields.containsKey(entityName) && entityNameToValueFields.get(entityName).contains(propertyDescriptor.getName()))
+                    if (propertySpec.containsEntry(entityName, propertyDescriptor.getName()))
                     {
                         wordsForEntity.add(String.format("%s_%s_%s", entityName, propertyDescriptor.getName(), valueTransformer.applyTransform(entityName, propertyDescriptor.getName(), nxtProperty)).toLowerCase());
                     }
