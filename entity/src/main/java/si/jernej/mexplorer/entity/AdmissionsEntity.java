@@ -2,6 +2,8 @@ package si.jernej.mexplorer.entity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,9 +20,9 @@ public class AdmissionsEntity implements Serializable
     private int rowId;                  // row ID (primary key)
     PatientsEntity patientsEntity;
     private int hadmId;                 // hospital admission ID
-    private Timestamp admitTime;        // time of admission to the hospital
-    private Timestamp dischTime;        // time of discharge from the hospital
-    private Timestamp deathTime;        // time of death
+    private LocalDateTime admitTime;    // time of admission to the hospital
+    private LocalDateTime dischTime;    // time of discharge from the hospital
+    private LocalDateTime deathTime;    // time of death
     private String admissionType;       // type of admission (for example emergency or elective)
     private String admissionLocation;   // admission location
     private String dischargeLocation;   // discharge location
@@ -29,8 +31,8 @@ public class AdmissionsEntity implements Serializable
     private String religion;            // religion
     private String maritalStatus;       // marital status
     private String ethnicity;           // ethnicity
-    private Timestamp edRegTime;        // ?
-    private Timestamp edOutTime;        // ?
+    private LocalDateTime edRegTime;    // ?
+    private LocalDateTime edOutTime;    // ?
     private String diagnosis;           // diagnosis
     private Short hospitalExpireFlag;   // ?
     private short hasChartEventsData;   // hospital admission ahs at least one observation in the chartevents table
@@ -71,34 +73,34 @@ public class AdmissionsEntity implements Serializable
     }
 
     @Column(name = "admittime", nullable = false)
-    public Timestamp getAdmitTime()
+    public LocalDateTime getAdmitTime()
     {
         return admitTime;
     }
 
-    public void setAdmitTime(Timestamp admittime)
+    public void setAdmitTime(LocalDateTime admittime)
     {
         this.admitTime = admittime;
     }
 
     @Column(name = "dischtime", nullable = false)
-    public Timestamp getDischTime()
+    public LocalDateTime getDischTime()
     {
         return dischTime;
     }
 
-    public void setDischTime(Timestamp dischtime)
+    public void setDischTime(LocalDateTime dischtime)
     {
         this.dischTime = dischtime;
     }
 
     @Column(name = "deathtime", nullable = true)
-    public Timestamp getDeathTime()
+    public LocalDateTime getDeathTime()
     {
         return deathTime;
     }
 
-    public void setDeathTime(Timestamp deathtime)
+    public void setDeathTime(LocalDateTime deathtime)
     {
         this.deathTime = deathtime;
     }
@@ -192,23 +194,23 @@ public class AdmissionsEntity implements Serializable
     }
 
     @Column(name = "edregtime", nullable = true)
-    public Timestamp getEdRegTime()
+    public LocalDateTime getEdRegTime()
     {
         return edRegTime;
     }
 
-    public void setEdRegTime(Timestamp edregtime)
+    public void setEdRegTime(LocalDateTime edregtime)
     {
         this.edRegTime = edregtime;
     }
 
     @Column(name = "edouttime", nullable = true)
-    public Timestamp getEdOutTime()
+    public LocalDateTime getEdOutTime()
     {
         return edOutTime;
     }
 
-    public void setEdOutTime(Timestamp edouttime)
+    public void setEdOutTime(LocalDateTime edouttime)
     {
         this.edOutTime = edouttime;
     }
