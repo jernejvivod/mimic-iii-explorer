@@ -9,4 +9,8 @@ public final class Constants
 
     public static final String COMPOSITE_TABLE_NAME = "composite";
 
+    // Statistics
+    public static final String PORTION_NULL_NAME = "portionNull";
+    public static final String NUMBER_UNIQUE_NAME = "numUnique";
+
 }
