@@ -1,0 +1,2 @@
+# Exclude implementation classes
+src/**/impl/
