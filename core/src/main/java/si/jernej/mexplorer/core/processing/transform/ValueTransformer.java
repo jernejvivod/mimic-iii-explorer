@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.transform;
+package si.jernej.mexplorer.core.processing.transform;
 
 import java.util.HashMap;
 import java.util.Map;

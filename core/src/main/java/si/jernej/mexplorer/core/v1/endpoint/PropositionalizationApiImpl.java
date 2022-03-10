@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.api.v1.endpoint;
+package si.jernej.mexplorer.core.v1.endpoint;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
