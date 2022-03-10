@@ -1,0 +1,260 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jv723/reference/1.0.0
+info:
+  description: API for the MIMIC-III Explorer Processor microservice
+  version: "1.0.0"
+  title: MIMIC-III Explorer Processor API
+  contact:
+    email: vivod.jernej@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: stats
+    description: Operations for retrieving data statistics
+  - name: propositionalization
+    description: Operations for performing database propositionalization
+  - name: target
+    description: Operations for extracting target values
+paths:
+  /stats:
+    get:
+      tags:
+        - stats
+      summary: get statistics for all columns
+      operationId: allStats
+      description: Get all statistics for all columns in the dataset
+      responses:
+        '200':
+          description: successfuly retrieved statistics for all columns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColumnStats'
+  /stats/{tableName}:
+    get:
+      tags:
+        - stats
+      summary: get statistics for specified table
+      description: get all statistics for all tables in the specified table
+      operationId: tableStats
+      parameters:
+        - name: tableName
+          in: path
+          description: name of the table for which to compute the column statistics
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successfully retrieved statistics for specified table
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ColumnStats'
+        '400':
+          description: Invalid table name
+        '404':
+          description: Table with specified name not found
+  /propositionalization/wordification:
+    post:
+      tags:
+        - propositionalization
+      summary: perform Wordification propositionalization algorithm
+      description: perform Woridification propositionalization algorithm with specified settings
+      operationId: wordification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WordificationConfig'
+      responses:
+        '200':
+          description: successfully performed the Wordification algorithm
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WordificationResult'
+  /target:
+    post:
+      tags:
+        - target
+      summary: extract target value
+      description: extract target value from database for specified goal
+      operationId: targetExtraction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TargetExtractionSpec'
+      responses:
+        '200':
+          description: successfully extracted target values
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExtractedTarget'
+components:
+  schemas:
+    ColumnStats:
+      type: object
+      properties:
+        tableName:
+          type: string
+          example: admissions
+        columnName:
+          type: string
+          example: admission_type
+        portionNull:
+          type: number
+          format: double
+          example: 0.12
+        numUnique:
+          type: integer
+          example: 3
+    WordificationConfig:
+      type: object
+      properties:
+        rootEntitiesSpec:
+          $ref: '#/components/schemas/RootEntitiesSpec'
+        propertySpec:
+          $ref: '#/components/schemas/PropertySpec'
+        compositeColumnsSpec:
+          $ref: '#/components/schemas/CompositeColumnsSpec'
+        valueTransformationSpec:
+          $ref: '#/components/schemas/ValueTransformationSpec'
+        concatenationSpec:
+          $ref: '#/components/schemas/ConcatenationSpec'
+    CompositeColumnsSpec:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompositeColumnsSpecEntry'
+    CompositeColumnsSpecEntry:
+      type: object
+      properties:
+        table1:
+          type: string
+          example: AdmissionsEntity
+        property1:
+          type: string
+          example: admitTime
+        table2:
+          type: string
+          example: PatientsEntity
+        property2:
+          type: string
+          example: dob
+        compositeName:
+          type: string
+          example: ageDecades
+        combiner:
+          type: string
+          enum:
+            - dateDiffYears5
+            - dateDiffYears10
+    RootEntitiesSpec:
+      type: object
+      properties:
+        rootEntity:
+          type: string
+          example: AdmissionsEntity
+        idProperty:
+          type: string
+          example: hadmId
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+    ConcatenationSpec:
+      type: object
+      properties:
+        concatenationScheme:
+          type: string
+          enum:
+            - zero
+            - one
+            - two
+    ValueTransformationSpec:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValueTransformationSpecEntry'
+    ValueTransformationSpecEntry:
+      type: object
+      properties:
+        entity:
+          type: string
+          example: AdmissionsEntity
+        property:
+          type: string
+        transform:
+          $ref: '#/components/schemas/Transform'
+    Transform:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - discretization
+        discretizationType:
+          type: string
+          enum:
+            - histogramAnalysis
+    PropertySpec:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertySpecEntry'
+    PropertySpecEntry:
+      type: object
+      properties:
+        entity:
+          type: string
+          example: AdmissionsEntity
+        properties:
+          type: array
+          items:
+            type: string
+    WordificationResult:
+      type: object
+      properties:
+        rootEntityId:
+          type: integer
+          format: int64
+        words:
+          type: array
+          items:
+            type: string
+    TargetExtractionSpec:
+      type: object
+      properties:
+        targetType:
+          type: string
+          enum:
+            - todo
+    ExtractedTarget:
+      type: object
+      properties:
+        rootEntityId:
+          type: integer
+        targetValue:
+          type: integer
