@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.transform;
+package si.jernej.mexplorer.core.processing.transform;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

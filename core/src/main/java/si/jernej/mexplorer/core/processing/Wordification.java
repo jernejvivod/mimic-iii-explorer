@@ -22,8 +22,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.Table;
 
-import si.jernej.mexplorer.core.transform.CompositeColumnCreator;
-import si.jernej.mexplorer.core.transform.ValueTransformer;
+import si.jernej.mexplorer.core.processing.spec.PropertySpec;
+import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
+import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
 
 @Stateless
 public class Wordification

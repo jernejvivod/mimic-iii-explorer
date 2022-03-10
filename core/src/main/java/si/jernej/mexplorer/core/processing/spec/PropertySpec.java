@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.processing;
+package si.jernej.mexplorer.core.processing.spec;
 
 import java.util.Collection;
 import java.util.HashMap;
