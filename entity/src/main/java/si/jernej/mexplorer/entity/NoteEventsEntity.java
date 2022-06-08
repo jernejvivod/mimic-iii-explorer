@@ -1,21 +1,24 @@
 package si.jernej.mexplorer.entity;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Objects;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "noteevents", schema = "mimiciii", catalog = "mimic")
-public class NoteeventsEntity
+public class NoteEventsEntity implements Serializable
 {
-    private int rowId;
-    private int subjectId;
-    private Integer hadmId;
+    private Long rowId;
+    private Long subjectId;
+    private AdmissionsEntity admissionsEntity;
     private Timestamp chartdate;
     private Timestamp charttime;
     private Timestamp storetime;
@@ -27,38 +30,38 @@ public class NoteeventsEntity
 
     @Id
     @Column(name = "row_id", nullable = false)
-    public int getRowId()
+    public Long getRowId()
     {
         return rowId;
     }
 
-    public void setRowId(int rowId)
+    public void setRowId(Long rowId)
     {
         this.rowId = rowId;
     }
 
     @Basic
     @Column(name = "subject_id", nullable = false)
-    public int getSubjectId()
+    public Long getSubjectId()
     {
         return subjectId;
     }
 
-    public void setSubjectId(int subjectId)
+    public void setSubjectId(Long subjectId)
     {
         this.subjectId = subjectId;
     }
 
-    @Basic
-    @Column(name = "hadm_id", nullable = true)
-    public Integer getHadmId()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hadm_id", referencedColumnName = "hadm_id")
+    public AdmissionsEntity getAdmissionsEntity()
     {
-        return hadmId;
+        return admissionsEntity;
     }
 
-    public void setHadmId(Integer hadmId)
+    public void setAdmissionsEntity(AdmissionsEntity admissionsEntity)
     {
-        this.hadmId = hadmId;
+        this.admissionsEntity = admissionsEntity;
     }
 
     @Basic
@@ -155,22 +158,5 @@ public class NoteeventsEntity
     public void setText(String text)
     {
         this.text = text;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        NoteeventsEntity that = (NoteeventsEntity) o;
-        return rowId == that.rowId && subjectId == that.subjectId && Objects.equals(hadmId, that.hadmId) && Objects.equals(chartdate, that.chartdate) && Objects.equals(charttime, that.charttime) && Objects.equals(storetime, that.storetime) && Objects.equals(category, that.category) && Objects.equals(description, that.description) && Objects.equals(cgid, that.cgid) && Objects.equals(iserror, that.iserror) && Objects.equals(text, that.text);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(rowId, subjectId, hadmId, chartdate, charttime, storetime, category, description, cgid, iserror, text);
     }
 }

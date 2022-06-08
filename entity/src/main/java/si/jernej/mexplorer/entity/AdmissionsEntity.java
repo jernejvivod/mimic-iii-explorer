@@ -1,9 +1,8 @@
 package si.jernej.mexplorer.entity;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,15 +10,16 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "admissions", schema = "mimiciii", catalog = "mimic")
 public class AdmissionsEntity implements Serializable
 {
-    private int rowId;                  // row ID (primary key)
-    PatientsEntity patientsEntity;
-    private int hadmId;                 // hospital admission ID
+    private Long rowId;                  // row ID (primary key)
+    private PatientsEntity patientsEntity;
+    private Long hadmId;                 // hospital admission ID
     private LocalDateTime admitTime;    // time of admission to the hospital
     private LocalDateTime dischTime;    // time of discharge from the hospital
     private LocalDateTime deathTime;    // time of death
@@ -35,16 +35,17 @@ public class AdmissionsEntity implements Serializable
     private LocalDateTime edOutTime;    // ?
     private String diagnosis;           // diagnosis
     private Short hospitalExpireFlag;   // ?
-    private short hasChartEventsData;   // hospital admission ahs at least one observation in the chartevents table
+    private short hasChartEventsData;   // hospital admission has at least one observation in the chartevents table
+    private Set<NoteEventsEntity> noteEventsEntitys;
 
     @Id
     @Column(name = "row_id", nullable = false)
-    public int getRowId()
+    public Long getRowId()
     {
         return rowId;
     }
 
-    public void setRowId(int rowId)
+    public void setRowId(Long rowId)
     {
         this.rowId = rowId;
     }
@@ -62,12 +63,12 @@ public class AdmissionsEntity implements Serializable
     }
 
     @Column(name = "hadm_id", nullable = false)
-    public int getHadmId()
+    public Long getHadmId()
     {
         return hadmId;
     }
 
-    public void setHadmId(int hadmId)
+    public void setHadmId(Long hadmId)
     {
         this.hadmId = hadmId;
     }
@@ -248,4 +249,14 @@ public class AdmissionsEntity implements Serializable
         this.hasChartEventsData = hasCharteventsData;
     }
 
+    @OneToMany(mappedBy="admissionsEntity", targetEntity = NoteEventsEntity.class)
+    public Set<NoteEventsEntity> getNoteEventsEntitys()
+    {
+        return noteEventsEntitys;
+    }
+
+    public void setNoteEventsEntitys(Set<NoteEventsEntity> noteeventsEntitys)
+    {
+        this.noteEventsEntitys = noteeventsEntitys;
+    }
 }

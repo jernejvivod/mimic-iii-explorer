@@ -19,6 +19,8 @@ tags:
     description: Operations for performing database propositionalization
   - name: target
     description: Operations for extracting target values
+  - name: clinical text
+    description: Operations for extracting clinical text
 paths:
   /stats:
     get:
@@ -35,7 +37,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ColumnStats'
+                  $ref: '#/components/schemas/TableStats'
   /stats/{tableName}:
     get:
       tags:
@@ -56,9 +58,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ColumnStats'
+                $ref: '#/components/schemas/TableStats'
         '400':
           description: Invalid table name
         '404':
@@ -71,6 +71,7 @@ paths:
       description: perform Woridification propositionalization algorithm with specified settings
       operationId: wordification
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -84,6 +85,28 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/WordificationResult'
+  /clinical-text/extract:
+    post:
+      tags:
+        - clinical text
+      summary: extract clinical text (note events)
+      description: extract clinical text (note events) with specified settings
+      operationId: clinical text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicalTextConfig'
+      responses:
+        '200':
+          description: successfully extracted clinical text
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicalTextResult'
   /target:
     post:
       tags:
@@ -92,6 +115,7 @@ paths:
       description: extract target value from database for specified goal
       operationId: targetExtraction
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -105,14 +129,44 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ExtractedTarget'
+  /ids:
+    post:
+      tags:
+        - ids
+      summary: get id values
+      description: get id values for specified entity
+      operationId: ids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdRetrievalSpec'
+      responses:
+        '200':
+          description: successfully retrieved ids
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
 components:
   schemas:
-    ColumnStats:
+    TableStats:
       type: object
       properties:
         tableName:
           type: string
           example: admissions
+        columnStats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnStats'
+    ColumnStats:
+      type: object
+      properties:
         columnName:
           type: string
           example: admission_type
@@ -164,15 +218,18 @@ components:
         combiner:
           type: string
           enum:
-            - dateDiffYears5
-            - dateDiffYears10
+            - DATE_DIFF
     RootEntitiesSpec:
       type: object
+      required:
+        - rootEntity
+        - idProperty
+        - ids
       properties:
-        rootEntity:
+        root_entity:
           type: string
           example: AdmissionsEntity
-        idProperty:
+        id_property:
           type: string
           example: hadmId
         ids:
@@ -186,9 +243,9 @@ components:
         concatenationScheme:
           type: string
           enum:
-            - zero
-            - one
-            - two
+            - ZERO
+            - ONE
+            - TWO
     ValueTransformationSpec:
       type: object
       properties:
@@ -212,11 +269,20 @@ components:
         kind:
           type: string
           enum:
-            - discretization
+            - DISCRETIZATION
+            - DATE_DIFF_ROUND
         discretizationType:
           type: string
           enum:
-            - histogramAnalysis
+            - HISTOGRAM_ANALYSIS
+        dateDiffRoundType:
+          type: string
+          enum:
+            - YEAR
+            - FIVE_YEARS
+            - TEN_YEARS
+            - FIFTEEN_YEARS
+            - TWENTY_YEARS
     PropertySpec:
       type: object
       properties:
@@ -234,6 +300,23 @@ components:
           type: array
           items:
             type: string
+            example: "insurance"
+    ClinicalTextConfig:
+      type: object
+      required:
+        - rootEntitiesSpec
+      properties:
+        root_entities_spec:
+          $ref: '#/components/schemas/RootEntitiesSpec'
+        data_range_spec:
+          $ref: '#/components/schemas/DataRangeSpec'
+    DataRangeSpec:
+      type: object
+      required:
+        - nRecords
+      properties:
+        n_records:
+          type: integer
     WordificationResult:
       type: object
       properties:
@@ -244,17 +327,57 @@ components:
           type: array
           items:
             type: string
+    ClinicalTextResult:
+      type: object
+      properties:
+        root_entity_id:
+          type: integer
+          format: int64
+        text:
+          type: string
     TargetExtractionSpec:
       type: object
       properties:
-        targetType:
+        target_type:
           type: string
           enum:
-            - todo
+            - PATIENT_DIED_DURING_ADMISSION
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
     ExtractedTarget:
       type: object
       properties:
-        rootEntityId:
+        root_entity_id:
           type: integer
-        targetValue:
+          format: int64
+        target_value:
           type: integer
+    IdRetrievalSpec:
+      type: object
+      properties:
+        entity_name:
+          type: string
+        id_property:
+          type: string
+        filter_specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdRetrievalFilterSpec'
+    IdRetrievalFilterSpec:
+      type: object
+      properties:
+        entity_name:
+          type: string
+        property_name:
+          type: string
+        comparator:
+          type: string
+          enum:
+            - LESS
+            - EQUAL
+            - MORE
+        property_val:
+          type: object

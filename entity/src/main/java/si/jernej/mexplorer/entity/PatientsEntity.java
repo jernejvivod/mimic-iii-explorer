@@ -23,7 +23,7 @@ public class PatientsEntity implements Serializable
     private LocalDateTime dodHosp;                    // Date of death recorded in the hospital records
     private LocalDateTime dodSsn;                     // Date of death recorded in the social security records
     private int expireFlag;                           // Flag indicating that the patient has died
-    private Set<AdmissionsEntity> admissionsEntities;
+    private Set<AdmissionsEntity> admissionsEntitys;
 
     @Id
     @Column(name = "row_id", nullable = false)
@@ -115,14 +115,14 @@ public class PatientsEntity implements Serializable
     }
 
     @OneToMany(targetEntity = AdmissionsEntity.class, mappedBy = "patientsEntity", fetch = FetchType.LAZY)
-    public Set<AdmissionsEntity> getAdmissionsEntities()
+    public Set<AdmissionsEntity> getAdmissionsEntitys()
     {
-        return admissionsEntities;
+        return admissionsEntitys;
     }
 
-    public void setAdmissionsEntities(Set<AdmissionsEntity> admissionsEntitys)
+    public void setAdmissionsEntitys(Set<AdmissionsEntity> admissionsEntitys)
     {
-        this.admissionsEntities = admissionsEntitys;
+        this.admissionsEntitys = admissionsEntitys;
     }
 
 }

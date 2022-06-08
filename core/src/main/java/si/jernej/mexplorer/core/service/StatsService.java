@@ -15,7 +15,7 @@ public class StatsService
         return null;
     }
 
-    public List<ColumnStatsDto> tableStats()
+    public List<ColumnStatsDto> tableStats(String tableName)
     {
         return null;
     }
