@@ -23,6 +23,6 @@ public class StatsApiImpl implements StatsApi
     @Override
     public Response tableStats(String tableName)
     {
-        return Response.ok().entity(statsService.tableStats()).build();
+        return Response.ok().entity(statsService.tableStats(tableName)).build();
     }
 }

@@ -16,17 +16,15 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.enterprise.context.Dependent;
 import javax.persistence.Table;
+import javax.ws.rs.InternalServerErrorException;
 
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
 
-@Stateless
+@Dependent
 public class Wordification
 {
 
@@ -43,38 +41,28 @@ public class Wordification
         TWO
     }
 
-    @PersistenceContext
-    private EntityManager em;
-
     /**
      * Implementation of the Wordification algorithm for an entity with a specified id.
      *
      * @param rootEntity the root entity for which to compute the results of Wordification
-     * @param idField the id field in the root entity
-     * @param idValue the value of the id field in the root entity
      * @param propertySpec specifies which properties of which entities to include in the Wordification algorithm
      * @param valueTransformer {@link ValueTransformer} instance used to specify the value transformations
      * @param compositeColumnCreator {@link CompositeColumnCreator} instance used to specify the creation of composite columns
      * @param concatenationScheme {@link ConcatenationScheme} instance used to specify the word concatenations
      * @return {@code List} of obtained words for specified root entity
      */
-    public List<String> wordify(String rootEntity, String idField, String idValue, PropertySpec propertySpec, ValueTransformer valueTransformer, CompositeColumnCreator compositeColumnCreator, ConcatenationScheme concatenationScheme)
+    public List<String> wordify(Object rootEntity, PropertySpec propertySpec, ValueTransformer valueTransformer, CompositeColumnCreator compositeColumnCreator, ConcatenationScheme concatenationScheme)
     {
 
         // list of resulting words
         List<String> wordsAll = new ArrayList<>();
 
-        // Get root entity.
-        String sql = String.format("SELECT e FROM %s e WHERE e.%s=%s", rootEntity, idField, idValue);
-        Query query = em.createQuery(sql);
-        Object root = query.getSingleResult();
-
-        // Initialize set of visited tables.
+        // initialize set of visited tables.
         Set<String> visitedEntities = new HashSet<>();
 
-        // Initialize BFS queue.
+        // initialize BFS queue
         Queue<Object> bfsQueue = new LinkedList<>();
-        bfsQueue.add(root);
+        bfsQueue.add(rootEntity);
 
         try
         {
@@ -132,11 +120,11 @@ public class Wordification
         }
         catch (IntrospectionException | IllegalAccessException | InvocationTargetException e)
         {
-            e.printStackTrace();
+            throw new InternalServerErrorException("error computing Wordification");
         }
 
         // Add values from composite columns.
-        Map<String, List<Object>> compositeColumns = compositeColumnCreator.processEntries(Collections.singletonList(root));
+        Map<String, List<Object>> compositeColumns = compositeColumnCreator.processEntries(Collections.singletonList(rootEntity));
         List<String> wordsForComposite = new ArrayList<>();
         compositeColumns.forEach((k, l) -> l.forEach(v -> wordsForComposite.add(String.format("%s_%s_%s", COMPOSITE_TABLE_NAME, k, valueTransformer.applyTransform(COMPOSITE_TABLE_NAME, k, v)).toLowerCase())));
 
@@ -178,7 +166,7 @@ public class Wordification
     /**
      * Add t_p_v__t_p'_v' type composite words.
      */
-    public void addConcatenationsOne(List<String> words, List<String> wordsWithConcatenations)
+    private void addConcatenationsOne(List<String> words, List<String> wordsWithConcatenations)
     {
         for (int i = 0; i < words.size() - 1; i++)
         {
@@ -192,7 +180,7 @@ public class Wordification
     /**
      * Add t_p_v__t_p'_v'__t_p''_v'' type composite words.
      */
-    public void addConcatenationsTwo(List<String> words, List<String> wordsWithConcatenations)
+    private void addConcatenationsTwo(List<String> words, List<String> wordsWithConcatenations)
     {
         for (int i = 0; i < words.size() - 2; i++)
         {

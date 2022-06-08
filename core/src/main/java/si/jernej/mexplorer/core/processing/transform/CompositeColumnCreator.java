@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import java.util.function.BinaryOperator;
 import java.util.stream.IntStream;
 
 /**
@@ -20,7 +20,7 @@ public class CompositeColumnCreator
     /**
      * Record representing a specification entry for the creation of a composite column.
      */
-    private record Entry(List<String> foreignKeyPath1, String property1, List<String> foreignKeyPath2, String property2, String compositeName, BiFunction<Object, Object, Object> combiner)
+    public record Entry(List<String> foreignKeyPath1, String property1, List<String> foreignKeyPath2, String property2, String compositeName, BiFunction<Object, Object, Object> combiner)
     {
 
         public List<String> getForeignKeyPath1()
@@ -61,6 +61,11 @@ public class CompositeColumnCreator
         this.entries = new ArrayList<>();
     }
 
+    public List<Entry> getEntries()
+    {
+        return entries;
+    }
+
     /**
      * Add specification entry for a composite column creation.
      *
@@ -71,7 +76,7 @@ public class CompositeColumnCreator
      * @param compositeName name of the new composite property
      * @param combiner BiFunction instance used to combine the property columns forming the composite column
      */
-    public void addEntry(List<String> foreignKeyPath1, String property1, List<String> foreignKeyPath2, String property2, String compositeName, BiFunction<Object, Object, Object> combiner)
+    public void addEntry(List<String> foreignKeyPath1, String property1, List<String> foreignKeyPath2, String property2, String compositeName, BinaryOperator<Object> combiner)
     {
         entries.add(new Entry(foreignKeyPath1, property1, foreignKeyPath2, property2, compositeName, combiner));
     }
@@ -145,7 +150,7 @@ public class CompositeColumnCreator
             }
 
             // Combine properties of entities.
-            resultsForEntity.put(entry.getCompositeName(), IntStream.range(0, res1Prop.size()).mapToObj(i -> entry.combiner.apply(res1Prop.get(i), res2Prop.get(i))).collect(Collectors.toList()));
+            resultsForEntity.put(entry.getCompositeName(), IntStream.range(0, res1Prop.size()).mapToObj(i -> entry.combiner.apply(res1Prop.get(i), res2Prop.get(i))).toList());
         }
 
         return resultsForEntity;

@@ -54,7 +54,7 @@ public class ValueTransformer
         }
         else
         {
-            return value;
+            return defaultTransform.apply(value);
         }
     }
 }

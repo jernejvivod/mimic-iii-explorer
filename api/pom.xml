@@ -24,6 +24,11 @@
             <artifactId>jackson-annotations</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.14</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -59,6 +64,7 @@
                                 <dateLibrary>java17</dateLibrary>
                                 <java17>true</java17>
                                 <useBeanValidation>true</useBeanValidation>
+                                <identifierNamingConvention>snake_case</identifierNamingConvention>
                             </configOptions>
                         </configuration>
                     </execution>
