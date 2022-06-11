@@ -15,6 +15,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
+import com.google.common.collect.Iterables;
+
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.processorapi.v1.model.ClinicalTextConfigDto;
 import si.jernej.mexplorer.processorapi.v1.model.ClinicalTextResultDto;
@@ -69,18 +71,16 @@ public class ClinicalTextService
                 .collect(Collectors.toSet());
 
         // extract texts and row ids
-        TypedQuery<Object[]> clinicalTextsQuery = em.createQuery(
-                        "SELECT n.text, n.rowId FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.chartdate",
-                        Object[].class
-                )
-                .setParameter("ids", clinicalTextIds);
-
-        if (dataRangeSpec != null)
+        List<Object[]> textsAndRowId = new ArrayList<>(clinicalTextIds.size());
+        for (List<Integer> clinicalTextIdsPartition : Iterables.partition(clinicalTextIds, 10000))
         {
-            clinicalTextsQuery = clinicalTextsQuery.setMaxResults(dataRangeSpec.getnRecords());
+            TypedQuery<Object[]> clinicalTextsQuery = em.createQuery(
+                            "SELECT n.text, n.rowId FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.chartdate",
+                            Object[].class
+                    )
+                    .setParameter("ids", clinicalTextIdsPartition);
+            textsAndRowId.addAll(clinicalTextsQuery.getResultList());
         }
-
-        List<Object[]> textsAndRowId = clinicalTextsQuery.getResultList();
 
         // construct results
         rootEntityIdToNoteEventsIds.forEach((rootEntityId, neRowIds) -> {
@@ -92,14 +92,12 @@ public class ClinicalTextService
                     textsForRootEntity.add((String) textAndRowId[0]);
                 }
             }
-
             ClinicalTextResultDto clinicalTextResultDto = new ClinicalTextResultDto();
             clinicalTextResultDto.setText(String.join(" ", textsForRootEntity));
             clinicalTextResultDto.setRootEntityId((Long) rootEntityId);
             results.add(clinicalTextResultDto);
         });
 
-        em.getTransaction().commit();
         return results;
     }
 }

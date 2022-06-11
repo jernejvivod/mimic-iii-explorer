@@ -42,6 +42,7 @@
         <mockito.version>4.4.0</mockito.version>
         <aeonbits-owner.version>1.0.12</aeonbits-owner.version>
         <slf4j-api.version>1.7.32</slf4j-api.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -132,6 +133,11 @@
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>${commons-beanutils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
