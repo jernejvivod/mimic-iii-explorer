@@ -1,12 +1,15 @@
 package si.jernej.mexplorer.core.service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.Dependent;
@@ -14,6 +17,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
@@ -25,6 +32,8 @@ import si.jernej.mexplorer.processorapi.v1.model.DataRangeSpecDto;
 @Dependent
 public class ClinicalTextService
 {
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalTextService.class);
+
     /**
      * Extract clinical text given specified configuration.
      *
@@ -33,6 +42,8 @@ public class ClinicalTextService
      */
     public Set<ClinicalTextResultDto> extractClinicalText(ClinicalTextConfigDto clinicalTextConfigDto)
     {
+        logger.info(".extractClinicalText extracting clinical text");  // TODO log request details
+
         DataRangeSpecDto dataRangeSpec = clinicalTextConfigDto.getDataRangeSpec();
         String rootEntityName = clinicalTextConfigDto.getRootEntitiesSpec().getRootEntity();
         String idPropertyName = clinicalTextConfigDto.getRootEntitiesSpec().getIdProperty();
@@ -44,9 +55,6 @@ public class ClinicalTextService
         // compute foreign key path from root entity to NoteEventsEntity
         Map<String, Set<String>> entityToLinkedEntities = EntityUtils.computeEntityToLinkedEntitiesMap(emf.getMetamodel());
         List<String> foreignKeyPath = EntityUtils.computeForeignKeyPath(rootEntityName, "NoteEventsEntity", entityToLinkedEntities);
-
-        // Set for storing results
-        Set<ClinicalTextResultDto> results = new HashSet<>();
 
         // extract root entities and their ids
         em.getTransaction().begin();
@@ -70,34 +78,55 @@ public class ClinicalTextService
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
 
+        // Set for storing results
+        Set<ClinicalTextResultDto> results = new HashSet<>();
+
         // extract texts and row ids
-        List<Object[]> textsAndRowId = new ArrayList<>(clinicalTextIds.size());
+        List<Object[]> textsRowIdChartDate = new ArrayList<>(clinicalTextIds.size());
         for (List<Integer> clinicalTextIdsPartition : Iterables.partition(clinicalTextIds, 10000))
         {
             TypedQuery<Object[]> clinicalTextsQuery = em.createQuery(
-                            "SELECT n.text, n.rowId FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.chartdate",
+                            "SELECT n.text, n.rowId, n.charttime FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.charttime",
                             Object[].class
                     )
                     .setParameter("ids", clinicalTextIdsPartition);
-            textsAndRowId.addAll(clinicalTextsQuery.getResultList());
+            textsRowIdChartDate.addAll(clinicalTextsQuery.getResultList());
         }
 
         // construct results
         rootEntityIdToNoteEventsIds.forEach((rootEntityId, neRowIds) -> {
-            List<String> textsForRootEntity = new ArrayList<>();
-            for (Object[] textAndRowId : textsAndRowId)
+
+            List<ImmutablePair<String, Timestamp>> textsAndChartTimesForRootEntity = new ArrayList<>();
+            for (Object[] textAndRowId : textsRowIdChartDate)
             {
                 if (neRowIds.contains(textAndRowId[1]))
                 {
-                    textsForRootEntity.add((String) textAndRowId[0]);
+                    if (dataRangeSpec != null && textAndRowId[2] == null)
+                    {
+                        continue;
+                    }
+                    textsAndChartTimesForRootEntity.add(ImmutablePair.of((String) textAndRowId[0], (Timestamp) textAndRowId[2]));
                 }
             }
-            ClinicalTextResultDto clinicalTextResultDto = new ClinicalTextResultDto();
-            clinicalTextResultDto.setText(String.join(" ", textsForRootEntity));
-            clinicalTextResultDto.setRootEntityId((Long) rootEntityId);
-            results.add(clinicalTextResultDto);
-        });
 
+            if (!textsAndChartTimesForRootEntity.isEmpty())
+            {
+                // if limiting text by charttime
+                if (dataRangeSpec != null)
+                {
+                    textsAndChartTimesForRootEntity.sort(Comparator.comparing(ImmutablePair::getRight));
+                    Timestamp initialTimestamp = textsAndChartTimesForRootEntity.get(0).getRight();
+                    textsAndChartTimesForRootEntity = textsAndChartTimesForRootEntity.stream()
+                            .filter(e -> TimeUnit.MILLISECONDS.toMinutes(e.getRight().getTime() - initialTimestamp.getTime()) < clinicalTextConfigDto.getDataRangeSpec().getFirstMinutes())
+                            .toList();
+                }
+
+                ClinicalTextResultDto clinicalTextResultDto = new ClinicalTextResultDto();
+                clinicalTextResultDto.setText(String.join(" ", textsAndChartTimesForRootEntity.stream().map(ImmutablePair::getLeft).toList()));
+                clinicalTextResultDto.setRootEntityId((Long) rootEntityId);
+                results.add(clinicalTextResultDto);
+            }
+        });
         return results;
     }
 }

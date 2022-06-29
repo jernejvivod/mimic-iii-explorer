@@ -13,7 +13,6 @@ class PropertySpecTest
     @Test
     void testPropertySpec()
     {
-
         String ENTITY1 = "AdmissionsEntity";
         String ENTITY1_PROPERTY1 = "admissionType";
         String ENTITY1_PROPERTY2 = "insurance";

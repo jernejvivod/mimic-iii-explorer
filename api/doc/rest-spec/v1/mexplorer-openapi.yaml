@@ -222,8 +222,8 @@ components:
     RootEntitiesSpec:
       type: object
       required:
-        - rootEntity
-        - idProperty
+        - root_entity
+        - id_property
         - ids
       properties:
         root_entity:
@@ -304,7 +304,7 @@ components:
     ClinicalTextConfig:
       type: object
       required:
-        - rootEntitiesSpec
+        - root_entities_spec
       properties:
         root_entities_spec:
           $ref: '#/components/schemas/RootEntitiesSpec'
@@ -313,9 +313,9 @@ components:
     DataRangeSpec:
       type: object
       required:
-        - nRecords
+        - first_minutes
       properties:
-        n_records:
+        first_minutes:
           type: integer
     WordificationResult:
       type: object
