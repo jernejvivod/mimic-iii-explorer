@@ -8,7 +8,6 @@ import si.jernej.mexplorer.entity.PatientsEntity;
 @Stateless
 public class PatientsManager extends AbstractManager<PatientsEntity>
 {
-
     public PatientsEntity getFirst()
     {
        TypedQuery<PatientsEntity> query = getEntityManager().createQuery("SELECT p FROM PatientsEntity p WHERE p.rowId=:id", PatientsEntity.class);

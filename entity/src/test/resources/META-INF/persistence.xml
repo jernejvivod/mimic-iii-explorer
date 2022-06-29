@@ -3,35 +3,10 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
-    <persistence-unit name="primary">
-        <jta-data-source>java:/MExplorerDS</jta-data-source>
+    <persistence-unit name="primary" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jar-file>target/classes</jar-file>
 
-        <class>si.jernej.mexplorer.entity.PatientsEntity</class>
-        <class>si.jernej.mexplorer.entity.AdmissionsEntity</class>
-        <class>si.jernej.mexplorer.entity.CalloutEntity</class>
-        <class>si.jernej.mexplorer.entity.CaregiversEntity</class>
-        <class>si.jernej.mexplorer.entity.CharteventsEntity</class>
-        <class>si.jernej.mexplorer.entity.CpteventsEntity</class>
-        <class>si.jernej.mexplorer.entity.DCptEntity</class>
-        <class>si.jernej.mexplorer.entity.DIcdDiagnosesEntity</class>
-        <class>si.jernej.mexplorer.entity.DIcdProceduresEntity</class>
-        <class>si.jernej.mexplorer.entity.DItemsEntity</class>
-        <class>si.jernej.mexplorer.entity.DLabitemsEntity</class>
-        <class>si.jernej.mexplorer.entity.DatetimeeventsEntity</class>
-        <class>si.jernej.mexplorer.entity.DiagnosesIcdEntity</class>
-        <class>si.jernej.mexplorer.entity.DrgcodesEntity</class>
-        <class>si.jernej.mexplorer.entity.IcuStaysEntity</class>
-        <class>si.jernej.mexplorer.entity.InputeventsCvEntity</class>
-        <class>si.jernej.mexplorer.entity.InputeventsMvEntity</class>
-        <class>si.jernej.mexplorer.entity.LabeventsEntity</class>
-        <class>si.jernej.mexplorer.entity.MicrobiologyeventsEntity</class>
-        <class>si.jernej.mexplorer.entity.NoteEventsEntity</class>
-        <class>si.jernej.mexplorer.entity.OutputeventsEntity</class>
-        <class>si.jernej.mexplorer.entity.PrescriptionsEntity</class>
-        <class>si.jernej.mexplorer.entity.ProcedureeventsMvEntity</class>
-        <class>si.jernej.mexplorer.entity.ProceduresIcdEntity</class>
-        <class>si.jernej.mexplorer.entity.ServicesEntity</class>
-        <class>si.jernej.mexplorer.entity.TransfersEntity</class>
         <properties>
             <!-- <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/postgres"/> -->
             <!-- <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/> -->
