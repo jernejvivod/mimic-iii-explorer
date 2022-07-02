@@ -2,12 +2,14 @@ package si.jernej.mexplorer.core.service;
 
 import java.util.List;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import si.jernej.mexplorer.core.processing.TargetExtraction;
 import si.jernej.mexplorer.processorapi.v1.model.ExtractedTargetDto;
 import si.jernej.mexplorer.processorapi.v1.model.TargetExtractionSpecDto;
 
+@Dependent
 public class TargetExtractionService
 {
     @Inject
