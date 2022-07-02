@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.test.spec;
+package si.jernej.mexplorer.core.test.processing.spec;
 
 import java.util.Set;
 

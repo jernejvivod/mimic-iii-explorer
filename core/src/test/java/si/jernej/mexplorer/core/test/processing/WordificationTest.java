@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.test.propositionalization;
+package si.jernej.mexplorer.core.test.processing;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

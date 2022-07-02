@@ -1,4 +1,4 @@
-package si.jernej.mexplorer.core.test.transform;
+package si.jernej.mexplorer.core.test.processing.transform;
 
 import java.util.List;
 import java.util.Map;
