@@ -10,9 +10,8 @@ import si.jernej.mexplorer.processorapi.v1.api.StatsApi;
 @Stateless
 public class StatsApiImpl implements StatsApi
 {
-
     @Inject
-    StatsService statsService;
+    private StatsService statsService;
 
     @Override
     public Response allStats()

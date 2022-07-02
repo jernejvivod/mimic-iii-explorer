@@ -23,7 +23,6 @@ class DtoConverterTest
     @Test
     void testToPropertySpec()
     {
-
         final String ENTITY1 = "AdmissionsEntity";
         final String ENTITY2 = "PatientsEntity";
         final List<String> PROPERTIES_LIST1 = List.of("admissionType", "insurance");

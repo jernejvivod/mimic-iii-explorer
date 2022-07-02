@@ -9,9 +9,8 @@ import si.jernej.mexplorer.processorapi.v1.model.TargetExtractionSpecDto;
 
 public class TargetApiImpl implements TargetApi
 {
-
     @Inject
-    TargetExtractionService targetExtractionService;
+    private TargetExtractionService targetExtractionService;
 
     @Override
     public Response targetExtraction(TargetExtractionSpecDto targetExtractionSpecDto)

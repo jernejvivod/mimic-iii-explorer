@@ -11,9 +11,8 @@ import si.jernej.mexplorer.processorapi.v1.model.WordificationConfigDto;
 @Stateless
 public class PropositionalizationApiImpl implements PropositionalizationApi
 {
-
     @Inject
-    PropositionalizationService propositionalizationService;
+    private PropositionalizationService propositionalizationService;
 
     @Override
     public Response wordification(WordificationConfigDto wordificationConfigDto)

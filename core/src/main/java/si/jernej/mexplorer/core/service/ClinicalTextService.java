@@ -3,7 +3,7 @@ package si.jernej.mexplorer.core.service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.enterprise.context.Dependent;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -40,24 +38,30 @@ public class ClinicalTextService
      * @param clinicalTextConfigDto configuration for extracting clinical text
      * @return extracted clinical text for each specified root entity
      */
-    public Set<ClinicalTextResultDto> extractClinicalText(ClinicalTextConfigDto clinicalTextConfigDto)
+    public Map<Object, List<ImmutablePair<String, Timestamp>>> extractClinicalText(ClinicalTextConfigDto clinicalTextConfigDto, EntityManager em)
     {
-        logger.info(".extractClinicalText extracting clinical text");  // TODO log request details
+        logger.info(".extractClinicalText extracting clinical text");
+        logger.info(".extractClinicalText root entity name: {}, root entity ID property {}, number of IDs {}",
+                clinicalTextConfigDto.getRootEntitiesSpec().getRootEntity(),
+                clinicalTextConfigDto.getRootEntitiesSpec().getIdProperty(),
+                clinicalTextConfigDto.getRootEntitiesSpec().getIds().size()
+        );
+
+        // if no root entity IDs specified, return empty map
+        if (clinicalTextConfigDto.getRootEntitiesSpec().getIds().isEmpty())
+        {
+            return Collections.emptyMap();
+        }
 
         DataRangeSpecDto dataRangeSpec = clinicalTextConfigDto.getDataRangeSpec();
         String rootEntityName = clinicalTextConfigDto.getRootEntitiesSpec().getRootEntity();
         String idPropertyName = clinicalTextConfigDto.getRootEntitiesSpec().getIdProperty();
 
-        // EntityManagerFactory and EntityManager
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("primary");
-        EntityManager em = emf.createEntityManager();
-
         // compute foreign key path from root entity to NoteEventsEntity
-        Map<String, Set<String>> entityToLinkedEntities = EntityUtils.computeEntityToLinkedEntitiesMap(emf.getMetamodel());
+        Map<String, Set<String>> entityToLinkedEntities = EntityUtils.computeEntityToLinkedEntitiesMap(em.getMetamodel());
         List<String> foreignKeyPath = EntityUtils.computeForeignKeyPath(rootEntityName, "NoteEventsEntity", entityToLinkedEntities);
 
         // extract root entities and their ids
-        em.getTransaction().begin();
         List<Object[]> rootEntitiesAndIds = em.createQuery(String.format("SELECT e, e.%1$s FROM %2$s e WHERE e.%1$s IN (:ids)",
                         idPropertyName, rootEntityName), Object[].class)
                 .setParameter("ids", clinicalTextConfigDto.getRootEntitiesSpec().getIds())
@@ -78,15 +82,12 @@ public class ClinicalTextService
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
 
-        // Set for storing results
-        Set<ClinicalTextResultDto> results = new HashSet<>();
-
         // extract texts and row ids
         List<Object[]> textsRowIdChartDate = new ArrayList<>(clinicalTextIds.size());
         for (List<Integer> clinicalTextIdsPartition : Iterables.partition(clinicalTextIds, 10000))
         {
             TypedQuery<Object[]> clinicalTextsQuery = em.createQuery(
-                            "SELECT n.text, n.rowId, n.charttime FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.charttime",
+                            "SELECT n.text, n.rowId, n.chartdate, n.charttime FROM NoteEventsEntity n WHERE n.rowId IN (:ids) ORDER BY n.chartdate, n.charttime",
                             Object[].class
                     )
                     .setParameter("ids", clinicalTextIdsPartition);
@@ -94,6 +95,8 @@ public class ClinicalTextService
         }
 
         // construct results
+        Map<Object, List<ImmutablePair<String, Timestamp>>> rootEntityIdTotextsAndChartTimes = new HashMap<>();
+
         rootEntityIdToNoteEventsIds.forEach((rootEntityId, neRowIds) -> {
 
             List<ImmutablePair<String, Timestamp>> textsAndChartTimesForRootEntity = new ArrayList<>();
@@ -105,27 +108,35 @@ public class ClinicalTextService
                     {
                         continue;
                     }
-                    textsAndChartTimesForRootEntity.add(ImmutablePair.of((String) textAndRowId[0], (Timestamp) textAndRowId[2]));
+                    textsAndChartTimesForRootEntity.add(ImmutablePair.of((String) textAndRowId[0], (Timestamp) (textAndRowId[3] != null ? textAndRowId[3] : textAndRowId[2])));
                 }
             }
 
             if (!textsAndChartTimesForRootEntity.isEmpty())
             {
-                // if limiting text by charttime
+                // if limiting text by time
                 if (dataRangeSpec != null)
                 {
-                    textsAndChartTimesForRootEntity.sort(Comparator.comparing(ImmutablePair::getRight));
                     Timestamp initialTimestamp = textsAndChartTimesForRootEntity.get(0).getRight();
                     textsAndChartTimesForRootEntity = textsAndChartTimesForRootEntity.stream()
-                            .filter(e -> TimeUnit.MILLISECONDS.toMinutes(e.getRight().getTime() - initialTimestamp.getTime()) < clinicalTextConfigDto.getDataRangeSpec().getFirstMinutes())
+                            .filter(e -> TimeUnit.MILLISECONDS.toMinutes(e.getRight().getTime() - initialTimestamp.getTime()) < dataRangeSpec.getFirstMinutes())
                             .toList();
                 }
-
-                ClinicalTextResultDto clinicalTextResultDto = new ClinicalTextResultDto();
-                clinicalTextResultDto.setText(String.join(" ", textsAndChartTimesForRootEntity.stream().map(ImmutablePair::getLeft).toList()));
-                clinicalTextResultDto.setRootEntityId((Long) rootEntityId);
-                results.add(clinicalTextResultDto);
+                rootEntityIdTotextsAndChartTimes.put(rootEntityId, textsAndChartTimesForRootEntity);
             }
+        });
+
+        return rootEntityIdTotextsAndChartTimes;
+    }
+
+    public Set<ClinicalTextResultDto> joinClinicalTextForEntity(Map<Object, List<ImmutablePair<String, Timestamp>>> rootEntityIdTotextsAndChartTimes)
+    {
+        Set<ClinicalTextResultDto> results = new HashSet<>();
+        rootEntityIdTotextsAndChartTimes.forEach((k, v) -> {
+            ClinicalTextResultDto clinicalTextResultDto = new ClinicalTextResultDto();
+            clinicalTextResultDto.setText(String.join(" ", v.stream().map(ImmutablePair::getLeft).toList()));
+            clinicalTextResultDto.setRootEntityId((Long) k);
+            results.add(clinicalTextResultDto);
         });
         return results;
     }

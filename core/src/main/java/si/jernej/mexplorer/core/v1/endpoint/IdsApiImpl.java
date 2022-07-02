@@ -13,7 +13,6 @@ import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
 @Stateless
 public class IdsApiImpl implements IdsApi
 {
-
     @Inject
     private IdRetrieval idRetrieval;
 

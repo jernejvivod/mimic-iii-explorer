@@ -9,9 +9,9 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.BadRequestException;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalFilterSpecDto;
@@ -21,7 +21,7 @@ import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
 public class IdRetrieval
 {
     @PersistenceContext
-    private EntityManager em;
+    private EntityManager em;  // TODO in superclass
 
     /**
      * Retrieve ids of specified entities with specified entity filtering.
@@ -32,7 +32,10 @@ public class IdRetrieval
     public Set<Object> retrieveIds(IdRetrievalSpecDto idRetrievalSpecDto)
     {
         // retrieve all specified entities for filtering
-        List<Object> entitiesAll = em.createQuery(String.format("SELECT e FROM %s e WHERE e.%s IS NOT NULL", idRetrievalSpecDto.getEntityName(), idRetrievalSpecDto.getIdProperty()), Object.class).getResultList();
+        List<Object> entitiesAll = em.createQuery(String.format("SELECT e FROM %s e WHERE e.%s IS NOT NULL",
+                idRetrievalSpecDto.getEntityName(),
+                idRetrievalSpecDto.getIdProperty()
+        ), Object.class).getResultList();
 
         // set current set of filtered entities and initialize empty set for adding entities for the next filtering
         Set<Object> entitiesFiltered = new HashSet<>(entitiesAll);
@@ -53,7 +56,7 @@ public class IdRetrieval
                     Set<Object> entityEndFkPath = EntityUtils.traverseForeignKeyPath(entity, foreignKeyPath);
                     if (entityEndFkPath.size() > 1)
                     {
-                        throw new BadRequestException("Entity used to filter the ids should be reachable by an all-singular path");
+                        throw new IllegalArgumentException("Entity used to filter the ids should be reachable by an all-singular path");
                     }
 
                     // filter
@@ -61,26 +64,26 @@ public class IdRetrieval
                     try
                     {
                         // compare property for filtering
-                        Object propertyForFiltering = BeanUtils.getProperty(entityForFiltering, filterSpec.getPropertyName());
+                        Object propertyForFiltering = PropertyUtils.getProperty(entityForFiltering, filterSpec.getPropertyName());
                         if (propertyForFiltering != null)
                         {
                             boolean compResult = switch (filterSpec.getComparator())
                                     {
-                                        case LESS -> ((Comparable) propertyForFiltering).compareTo((Comparable) filterSpec.getPropertyVal()) < 0;
-                                        case MORE -> ((Comparable) propertyForFiltering).compareTo((Comparable) filterSpec.getPropertyVal()) > 0;
-                                        case EQUAL -> ((Comparable) propertyForFiltering).compareTo((Comparable) filterSpec.getPropertyVal()) == 0;
+                                        case LESS -> ((Comparable) propertyForFiltering).compareTo(filterSpec.getPropertyVal()) < 0;
+                                        case MORE -> ((Comparable) propertyForFiltering).compareTo(filterSpec.getPropertyVal()) > 0;
+                                        case EQUAL -> ((Comparable) propertyForFiltering).compareTo(filterSpec.getPropertyVal()) == 0;
                                     };
 
                             // if filtering criteria satisfied add to list of filtered entities
                             if (compResult)
                             {
-                                entitiesFilteredNxt.add(entityForFiltering);
+                                entitiesFilteredNxt.add(entity);
                             }
                         }
                     }
                     catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
                     {
-                        throw new BadRequestException("Specified property for filtering is not valid");
+                        throw new IllegalArgumentException(String.format("Specified property '%s' for filtering of entity '%s' is not valid", filterSpec.getPropertyName(), filterSpec.getEntityName()));
                     }
                 }
                 entitiesFiltered = new HashSet<>(entitiesFilteredNxt);
@@ -98,7 +101,7 @@ public class IdRetrieval
             }
             catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
             {
-                throw new BadRequestException("specified id property name is not valid");
+                throw new IllegalArgumentException(String.format("Specified property '%s' for filtering of entity '%s' is not valid", idRetrievalSpecDto.getIdProperty(), idRetrievalSpecDto.getEntityName()));
             }
         }
         return ids;
