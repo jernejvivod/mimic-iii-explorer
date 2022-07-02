@@ -5,6 +5,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.core.Response;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
@@ -19,12 +21,16 @@ public class ClinicalTextApiImpl implements ClinicalTextApi
 {
     @Inject
     private ClinicalTextService clinicalTextService;
+    @PersistenceContext
+    private EntityManager em;  // TODO to superclass
 
     @Override
-    @TransactionTimeout(value=60, unit= TimeUnit.MINUTES)
+    @TransactionTimeout(value = 60, unit = TimeUnit.MINUTES)
     public Response clinicalText(ClinicalTextConfigDto clinicalTextConfigDto)
     {
-        Set<ClinicalTextResultDto> extractedText = clinicalTextService.extractClinicalText(clinicalTextConfigDto);
+        Set<ClinicalTextResultDto> extractedText = clinicalTextService.joinClinicalTextForEntity(
+                clinicalTextService.extractClinicalText(clinicalTextConfigDto, em)
+        );
         return Response.ok().entity(extractedText).build();
     }
 }
