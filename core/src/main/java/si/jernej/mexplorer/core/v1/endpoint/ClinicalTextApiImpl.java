@@ -22,7 +22,7 @@ public class ClinicalTextApiImpl implements ClinicalTextApi
     @Inject
     private ClinicalTextService clinicalTextService;
     @PersistenceContext
-    private EntityManager em;  // TODO to superclass
+    private EntityManager em;
 
     @Override
     @TransactionTimeout(value = 60, unit = TimeUnit.MINUTES)

@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.ejb.Stateless;
 import javax.enterprise.context.Dependent;
 import javax.persistence.Table;
 import javax.ws.rs.InternalServerErrorException;
@@ -24,7 +25,7 @@ import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
 
-@Dependent
+@Stateless
 public class Wordification
 {
 

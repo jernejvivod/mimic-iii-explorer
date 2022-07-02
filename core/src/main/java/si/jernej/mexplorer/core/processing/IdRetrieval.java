@@ -21,7 +21,7 @@ import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
 public class IdRetrieval
 {
     @PersistenceContext
-    private EntityManager em;  // TODO in superclass
+    private EntityManager em;
 
     /**
      * Retrieve ids of specified entities with specified entity filtering.

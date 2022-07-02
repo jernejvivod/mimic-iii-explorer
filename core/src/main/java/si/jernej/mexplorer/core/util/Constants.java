@@ -8,5 +8,4 @@ public final class Constants
     }
 
     public static final String COMPOSITE_TABLE_NAME = "composite";
-
 }
