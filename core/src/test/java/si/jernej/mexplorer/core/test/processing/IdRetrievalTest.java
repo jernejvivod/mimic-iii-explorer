@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 
 import org.jboss.weld.environment.se.Weld;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +45,7 @@ class IdRetrievalTest extends ATestBase
         IdRetrievalSpecDto idRetrievalSpecDto = new IdRetrievalSpecDto();
         idRetrievalSpecDto.setEntityName(entityName);
         idRetrievalSpecDto.setIdProperty(propertyName);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
+        Assertions.assertThrows(BadRequestException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
     }
 
     @Test
