@@ -4,11 +4,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.BadRequestException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -39,14 +41,22 @@ public class IdRetrieval
         logger.info(".retrieveIds root entity name: {}, root entity ID property {}, number of filter specifications {}",
                 idRetrievalSpecDto.getEntityName(),
                 idRetrievalSpecDto.getIdProperty(),
-                idRetrievalSpecDto.getFilterSpecs().size()
+                Optional.ofNullable(idRetrievalSpecDto.getFilterSpecs()).map(List::size).orElse(0)
         );
 
         // retrieve all specified entities for filtering
-        List<Object> entitiesAll = em.createQuery(String.format("SELECT e FROM %s e WHERE e.%s IS NOT NULL",
-                idRetrievalSpecDto.getEntityName(),
-                idRetrievalSpecDto.getIdProperty()
-        ), Object.class).getResultList();
+        List<Object> entitiesAll;
+        try
+        {
+            entitiesAll = em.createQuery(String.format("SELECT e FROM %s e WHERE e.%s IS NOT NULL",
+                    idRetrievalSpecDto.getEntityName(),
+                    idRetrievalSpecDto.getIdProperty()
+            ), Object.class).getResultList();
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new BadRequestException(e.getMessage());
+        }
 
         // set current set of filtered entities and initialize empty set for adding entities for the next filtering
         Set<Object> entitiesFiltered = new HashSet<>(entitiesAll);
