@@ -6,6 +6,9 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import si.jernej.mexplorer.processorapi.v1.model.ExtractedTargetDto;
 
 /**
@@ -14,6 +17,8 @@ import si.jernej.mexplorer.processorapi.v1.model.ExtractedTargetDto;
 @Stateless
 public class TargetExtraction
 {
+    private static final Logger logger = LoggerFactory.getLogger(TargetExtraction.class);
+
     @PersistenceContext
     private EntityManager em;
 
@@ -23,6 +28,8 @@ public class TargetExtraction
      */
     public List<ExtractedTargetDto> extractPatientDiedDuringAdmissionTarget(List<Long> ids)
     {
+        logger.info("extracting target 'patient died during admission' ({} ids)", ids.size());
+
         String sql = "SELECT a.hadmId, a.hospitalExpireFlag FROM AdmissionsEntity a WHERE a.hadmId IN (:ids)";
         List<Object[]> results = em.createQuery(sql, Object[].class).setParameter("ids", ids).getResultList();
 

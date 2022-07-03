@@ -12,6 +12,8 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalFilterSpecDto;
@@ -20,6 +22,8 @@ import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
 @Stateless
 public class IdRetrieval
 {
+    private static final Logger logger = LoggerFactory.getLogger(IdRetrieval.class);
+
     @PersistenceContext
     private EntityManager em;
 
@@ -31,6 +35,13 @@ public class IdRetrieval
      */
     public Set<Object> retrieveIds(IdRetrievalSpecDto idRetrievalSpecDto)
     {
+        logger.info(".retrieveIds extracting ids");
+        logger.info(".retrieveIds root entity name: {}, root entity ID property {}, number of filter specifications {}",
+                idRetrievalSpecDto.getEntityName(),
+                idRetrievalSpecDto.getIdProperty(),
+                idRetrievalSpecDto.getFilterSpecs().size()
+        );
+
         // retrieve all specified entities for filtering
         List<Object> entitiesAll = em.createQuery(String.format("SELECT e FROM %s e WHERE e.%s IS NOT NULL",
                 idRetrievalSpecDto.getEntityName(),
