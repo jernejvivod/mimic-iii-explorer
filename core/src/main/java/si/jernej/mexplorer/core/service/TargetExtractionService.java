@@ -13,7 +13,7 @@ import si.jernej.mexplorer.processorapi.v1.model.TargetExtractionSpecDto;
 public class TargetExtractionService
 {
     @Inject
-    TargetExtraction targetExtraction;
+    private TargetExtraction targetExtraction;
 
     public List<ExtractedTargetDto> computeTarget(TargetExtractionSpecDto targetExtractionSpecDto)
     {

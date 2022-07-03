@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import si.jernej.mexplorer.core.processing.IdRetrieval;
+import si.jernej.mexplorer.core.service.TargetExtractionService;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalFilterSpecDto;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
 import si.jernej.mexplorer.test.ATestBase;
@@ -24,7 +25,8 @@ class IdRetrievalTest extends ATestBase
         return weld.addPackages(
                 true,
                 getClass(),
-                IdRetrieval.class
+                IdRetrieval.class,
+                TargetExtractionService.class
         );
     }
 
