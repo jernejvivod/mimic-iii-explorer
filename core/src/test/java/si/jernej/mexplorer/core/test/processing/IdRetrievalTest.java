@@ -157,7 +157,7 @@ class IdRetrievalTest extends ATestBase
     }
 
     @Test
-    void filterByLinkedEntitySingleFilter()
+    void filterBySameAndLinkedEntityTwoFilters()
     {
         IdRetrievalSpecDto idRetrievalSpecDto = new IdRetrievalSpecDto();
         idRetrievalSpecDto.setEntityName("AdmissionsEntity");
@@ -182,32 +182,4 @@ class IdRetrievalTest extends ATestBase
         Set<Object> ids = idRetrieval.retrieveIds(idRetrievalSpecDto);
         Assertions.assertEquals(countExpected, ids.size());
     }
-
-    @Test
-    void filterBySameAndLinkedEntityTwoFilters()
-    {
-        IdRetrievalSpecDto idRetrievalSpecDto = new IdRetrievalSpecDto();
-        idRetrievalSpecDto.setEntityName("AdmissionsEntity");
-        idRetrievalSpecDto.setIdProperty("hadmId");
-
-        IdRetrievalFilterSpecDto idRetrievalFilterSpecDto1 = new IdRetrievalFilterSpecDto();
-        idRetrievalFilterSpecDto1.setEntityName("AdmissionsEntity");
-        idRetrievalFilterSpecDto1.setPropertyName("hospitalExpireFlag");
-        idRetrievalFilterSpecDto1.setComparator(IdRetrievalFilterSpecDto.ComparatorEnum.MORE);
-        idRetrievalFilterSpecDto1.setPropertyVal((short) 0);
-
-        IdRetrievalFilterSpecDto idRetrievalFilterSpecDto2 = new IdRetrievalFilterSpecDto();
-        idRetrievalFilterSpecDto2.setEntityName("AdmissionsEntity");
-        idRetrievalFilterSpecDto2.setPropertyName("admissionType");
-        idRetrievalFilterSpecDto2.setComparator(IdRetrievalFilterSpecDto.ComparatorEnum.EQUAL);
-        idRetrievalFilterSpecDto2.setPropertyVal("EMERGENCY");
-
-        idRetrievalSpecDto.setFilterSpecs(List.of(idRetrievalFilterSpecDto1, idRetrievalFilterSpecDto2));
-
-        long countExpected = em.createQuery("SELECT COUNT(a) FROM AdmissionsEntity a WHERE a.admissionType = 'EMERGENCY' AND a.hospitalExpireFlag=1", Long.class).getSingleResult();
-
-        Set<Object> ids = idRetrieval.retrieveIds(idRetrievalSpecDto);
-        Assertions.assertEquals(countExpected, ids.size());
-    }
-
 }

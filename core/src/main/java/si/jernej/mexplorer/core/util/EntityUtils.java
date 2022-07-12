@@ -14,11 +14,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.Id;
+import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.Metamodel;
 
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 
 public final class EntityUtils
 {
@@ -67,7 +70,7 @@ public final class EntityUtils
     {
         if (!entityToLinkedEntities.containsKey(rootEntityName))
         {
-            throw new IllegalArgumentException("Root entity not found");
+            throw new ValidationCoreException("Root entity not found");
         }
 
         // run BFS to find path
@@ -121,6 +124,19 @@ public final class EntityUtils
                     return linkedEntities;
                 }
         ));
+    }
+
+    public static Map<String, Set<String>> computeEntityNameToAttributes(Metamodel metamodel)
+    {
+        return metamodel
+                .getManagedTypes().stream()
+                .collect(Collectors.toMap(
+                                m -> m.getJavaType().getSimpleName(),
+                                m -> m.getAttributes().stream()
+                                        .map(Attribute::getName)
+                                        .collect(Collectors.toSet())
+                        )
+                );
     }
 
     /**

@@ -5,31 +5,44 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import javax.inject.Inject;
 
+import org.jboss.weld.environment.se.Weld;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import si.jernej.mexplorer.core.processing.IdRetrieval;
 import si.jernej.mexplorer.core.processing.Wordification;
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
+import si.jernej.mexplorer.core.service.TargetExtractionService;
 import si.jernej.mexplorer.entity.AdmissionsEntity;
 import si.jernej.mexplorer.entity.PatientsEntity;
+import si.jernej.mexplorer.test.ATestBase;
 
-class WordificationTest
+class WordificationTest extends ATestBase
 {
+    @Override
+    protected Weld loadWeld(Weld weld)
+    {
+        return weld.addPackages(
+                true,
+                getClass(),
+                Wordification.class,
+                TargetExtractionService.class
+        );
+    }
 
+    @Inject
     private Wordification wordification;
 
-    private AdmissionsEntity rootAdmissionsEntity;
+    private static AdmissionsEntity rootAdmissionsEntity;
 
-    @BeforeEach
-    void constructEntities()
+    @BeforeAll
+    static void constructEntities()
     {
-
-        wordification = Mockito.spy(Wordification.class);
-
         rootAdmissionsEntity = new AdmissionsEntity();
         rootAdmissionsEntity.setAdmissionType("admissionTypeString");
         rootAdmissionsEntity.setInsurance("insuranceString");

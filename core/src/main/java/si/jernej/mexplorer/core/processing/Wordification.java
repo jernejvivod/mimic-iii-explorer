@@ -54,7 +54,6 @@ public class Wordification
      */
     public List<String> wordify(Object rootEntity, PropertySpec propertySpec, ValueTransformer valueTransformer, CompositeColumnCreator compositeColumnCreator, ConcatenationScheme concatenationScheme)
     {
-
         // list of resulting words
         List<String> wordsAll = new ArrayList<>();
 
@@ -99,7 +98,7 @@ public class Wordification
                         // If collection of linked entities that were not yet visited, add to queue.
                         if (!visitedEntities.contains(aClass.getSimpleName()) && aClass.isAnnotationPresent(Table.class))
                         {
-                            bfsQueue.addAll((Collection<?>) nxt);
+                            bfsQueue.addAll((Collection<?>) nxtProperty);
                         }
                     }
                     else if (nxtProperty != null)

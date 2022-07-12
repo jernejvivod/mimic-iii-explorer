@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.processorapi.v1.model.ClinicalTextConfigDto;
 import si.jernej.mexplorer.processorapi.v1.model.ClinicalTextResultDto;
@@ -62,10 +63,18 @@ public class ClinicalTextService
         List<String> foreignKeyPath = EntityUtils.computeForeignKeyPath(rootEntityName, "NoteEventsEntity", entityToLinkedEntities);
 
         // extract root entities and their ids
-        List<Object[]> rootEntitiesAndIds = em.createQuery(String.format("SELECT e, e.%1$s FROM %2$s e WHERE e.%1$s IN (:ids)",
-                        idPropertyName, rootEntityName), Object[].class)
-                .setParameter("ids", clinicalTextConfigDto.getRootEntitiesSpec().getIds())
-                .getResultList();
+        List<Object[]> rootEntitiesAndIds;
+        try
+        {
+            rootEntitiesAndIds = em.createQuery(String.format("SELECT e, e.%1$s FROM %2$s e WHERE e.%1$s IN (:ids)",
+                            idPropertyName, rootEntityName), Object[].class)
+                    .setParameter("ids", clinicalTextConfigDto.getRootEntitiesSpec().getIds())
+                    .getResultList();
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new ValidationCoreException(e.getMessage());
+        }
 
         // map ids of root entities to corresponding clinical text ids
         Map<Object, Set<Integer>> rootEntityIdToNoteEventsIds = new HashMap<>();
