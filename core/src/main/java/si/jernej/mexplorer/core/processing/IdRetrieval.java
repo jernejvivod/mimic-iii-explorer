@@ -10,13 +10,13 @@ import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.ws.rs.BadRequestException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalFilterSpecDto;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalSpecDto;
@@ -55,7 +55,7 @@ public class IdRetrieval
         }
         catch (IllegalArgumentException e)
         {
-            throw new BadRequestException(e.getMessage());
+            throw new ValidationCoreException(e.getMessage());
         }
 
         // set current set of filtered entities and initialize empty set for adding entities for the next filtering
