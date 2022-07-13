@@ -77,7 +77,7 @@ public class IdRetrieval
                     Set<Object> entityEndFkPath = EntityUtils.traverseForeignKeyPath(entity, foreignKeyPath);
                     if (entityEndFkPath.size() > 1)
                     {
-                        throw new IllegalArgumentException("Entity used to filter the ids should be reachable by an all-singular path");
+                        throw new ValidationCoreException("Entity used to filter the ids should be reachable by an all-singular path");
                     }
 
                     // filter
@@ -104,7 +104,7 @@ public class IdRetrieval
                     }
                     catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
                     {
-                        throw new IllegalArgumentException(String.format("Specified property '%s' for filtering of entity '%s' is not valid", filterSpec.getPropertyName(), filterSpec.getEntityName()));
+                        throw new ValidationCoreException("Specified property '%s' for filtering of entity '%s' is not valid".formatted(filterSpec.getPropertyName(), filterSpec.getEntityName()));
                     }
                 }
                 entitiesFiltered = new HashSet<>(entitiesFilteredNxt);
@@ -122,7 +122,7 @@ public class IdRetrieval
             }
             catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
             {
-                throw new IllegalArgumentException(String.format("Specified property '%s' for filtering of entity '%s' is not valid", idRetrievalSpecDto.getIdProperty(), idRetrievalSpecDto.getEntityName()));
+                throw new ValidationCoreException("Specified property '%s' for filtering of entity '%s' is not valid".formatted(idRetrievalSpecDto.getIdProperty(), idRetrievalSpecDto.getEntityName()));
             }
         }
         return ids;

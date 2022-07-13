@@ -97,7 +97,7 @@ public final class EntityUtils
                 }
             }
         }
-        throw new IllegalArgumentException("Target entity not found");
+        throw new ValidationCoreException("Target entity not found");
     }
 
     /**

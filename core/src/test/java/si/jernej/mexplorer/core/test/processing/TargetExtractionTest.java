@@ -8,6 +8,7 @@ import org.jboss.weld.environment.se.Weld;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import si.jernej.mexplorer.core.manager.MimicEntityManager;
 import si.jernej.mexplorer.core.processing.TargetExtraction;
 import si.jernej.mexplorer.core.service.TargetExtractionService;
 import si.jernej.mexplorer.processorapi.v1.model.ExtractedTargetDto;
@@ -23,7 +24,8 @@ class TargetExtractionTest extends ATestBase
                 true,
                 getClass(),
                 TargetExtractionService.class,
-                TargetExtraction.class
+                TargetExtraction.class,
+                MimicEntityManager.class
         );
     }
 
