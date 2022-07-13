@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import si.jernej.mexplorer.core.manager.MimicEntityManager;
 import si.jernej.mexplorer.core.processing.IdRetrieval;
 import si.jernej.mexplorer.core.processing.Wordification;
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
@@ -31,7 +32,8 @@ class WordificationTest extends ATestBase
                 true,
                 getClass(),
                 Wordification.class,
-                TargetExtractionService.class
+                TargetExtractionService.class,
+                MimicEntityManager.class
         );
     }
 

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.entity.AdmissionsEntity;
 import si.jernej.mexplorer.test.ATestBase;
@@ -59,14 +60,14 @@ public class EntityUtilsTest extends ATestBase
     @Test
     void computeForeignKeyPathInvalidEntityNames()
     {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> EntityUtils.computeForeignKeyPath("A", "NONEXISTENT", entityToLinkedEntities));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> EntityUtils.computeForeignKeyPath("NONEXISTENT", "NONEXISTENT", entityToLinkedEntities));
+        Assertions.assertThrows(ValidationCoreException.class, () -> EntityUtils.computeForeignKeyPath("A", "NONEXISTENT", entityToLinkedEntities));
+        Assertions.assertThrows(ValidationCoreException.class, () -> EntityUtils.computeForeignKeyPath("NONEXISTENT", "NONEXISTENT", entityToLinkedEntities));
     }
 
     @Test
     void computeForeignKeyPathNonexistentPath()
     {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> EntityUtils.computeForeignKeyPath("A", "J", entityToLinkedEntities));
+        Assertions.assertThrows(ValidationCoreException.class, () -> EntityUtils.computeForeignKeyPath("A", "J", entityToLinkedEntities));
     }
 
     @Test

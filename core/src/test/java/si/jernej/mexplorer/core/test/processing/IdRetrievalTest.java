@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
+import si.jernej.mexplorer.core.manager.MimicEntityManager;
 import si.jernej.mexplorer.core.processing.IdRetrieval;
 import si.jernej.mexplorer.core.service.TargetExtractionService;
 import si.jernej.mexplorer.processorapi.v1.model.IdRetrievalFilterSpecDto;
@@ -27,7 +29,8 @@ class IdRetrievalTest extends ATestBase
                 true,
                 getClass(),
                 IdRetrieval.class,
-                TargetExtractionService.class
+                TargetExtractionService.class,
+                MimicEntityManager.class
         );
     }
 
@@ -45,7 +48,7 @@ class IdRetrievalTest extends ATestBase
         IdRetrievalSpecDto idRetrievalSpecDto = new IdRetrievalSpecDto();
         idRetrievalSpecDto.setEntityName(entityName);
         idRetrievalSpecDto.setIdProperty(propertyName);
-        Assertions.assertThrows(BadRequestException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
+        Assertions.assertThrows(ValidationCoreException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
     }
 
     @Test
@@ -82,7 +85,7 @@ class IdRetrievalTest extends ATestBase
         idRetrievalFilterSpecDto.setPropertyVal("EMERGENCY");
         idRetrievalSpecDto.setFilterSpecs(List.of(idRetrievalFilterSpecDto));
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
+        Assertions.assertThrows(ValidationCoreException.class, () -> idRetrieval.retrieveIds(idRetrievalSpecDto));
     }
 
     @ParameterizedTest

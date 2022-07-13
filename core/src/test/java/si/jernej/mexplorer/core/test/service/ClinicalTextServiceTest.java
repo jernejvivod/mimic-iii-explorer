@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import si.jernej.mexplorer.core.manager.MimicEntityManager;
 import si.jernej.mexplorer.core.processing.Wordification;
 import si.jernej.mexplorer.core.service.ClinicalTextService;
 import si.jernej.mexplorer.processorapi.v1.model.ClinicalTextConfigDto;
@@ -31,7 +32,8 @@ class ClinicalTextServiceTest extends ATestBase
                 true,
                 getClass(),
                 ClinicalTextService.class,
-                Wordification.class
+                Wordification.class,
+                MimicEntityManager.class
         );
     }
 
