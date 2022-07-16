@@ -1,6 +1,9 @@
 package si.jernej.mexplorer.core.test.processing;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +16,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import si.jernej.mexplorer.core.manager.MimicEntityManager;
-import si.jernej.mexplorer.core.processing.IdRetrieval;
 import si.jernej.mexplorer.core.processing.Wordification;
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
@@ -48,9 +50,11 @@ class WordificationTest extends ATestBase
         rootAdmissionsEntity = new AdmissionsEntity();
         rootAdmissionsEntity.setAdmissionType("admissionTypeString");
         rootAdmissionsEntity.setInsurance("insuranceString");
+        rootAdmissionsEntity.setAdmitTime(LocalDateTime.of(LocalDate.of(2012, 2, 13), LocalTime.of(8, 13)));
 
         PatientsEntity patientsEntity = new PatientsEntity();
         patientsEntity.setGender("genderString");
+        patientsEntity.setDob(LocalDateTime.of(LocalDate.of(1955, 8, 3), LocalTime.of(0, 0)));
 
         int year = 2022;
         int month = 4;
@@ -143,6 +147,37 @@ class WordificationTest extends ATestBase
         Assertions.assertEquals(expectedWords, new HashSet<>(words));
     }
 
-    // TODO tests for composite column creation, value transformation and both (combined)
+    @Test
+    void basicWithCompositeColumnCreator()
+    {
+        Set<String> expectedWords = Set.of(
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "admissionsentity@admissiontype@admissiontypestring@@admissionsentity@insurance@insurancestring",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring",
+                "patientsentity@dod@2022-04-18t08:00@@patientsentity@gender@genderstring",
+                "composite@ageatadmission@56"
+        );
+
+        PropertySpec propertySpec = new PropertySpec();
+        propertySpec.addEntry("AdmissionsEntity", List.of("admissionType", "insurance"));
+        propertySpec.addEntry("PatientsEntity", List.of("gender", "dod"));
+
+        ValueTransformer valueTransformer = new ValueTransformer();
+        CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();
+        compositeColumnCreator.addEntry(
+                List.of("AdmissionsEntity"),
+                "admitTime",
+                List.of("AdmissionsEntity", "PatientsEntity"),
+                "dob",
+                "ageAtAdmission",
+                (dateAdmission, dateBirth) -> ChronoUnit.YEARS.between((LocalDateTime) dateBirth, (LocalDateTime) dateAdmission)
+        );
+
+        List<String> words = wordification.wordify(rootAdmissionsEntity, propertySpec, valueTransformer, compositeColumnCreator, Wordification.ConcatenationScheme.TWO);
+
+        Assertions.assertEquals(expectedWords, new HashSet<>(words));
+    }
 
 }
