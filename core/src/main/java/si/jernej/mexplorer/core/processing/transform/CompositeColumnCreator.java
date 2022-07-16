@@ -1,7 +1,5 @@
 package si.jernej.mexplorer.core.processing.transform;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,6 +8,11 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.stream.IntStream;
+
+import org.apache.commons.beanutils.PropertyUtils;
+
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
+import si.jernej.mexplorer.core.util.EntityUtils;
 
 /**
  * Class implementing functionality for creating composite columns.
@@ -87,9 +90,8 @@ public class CompositeColumnCreator
      * @param rootEntities List of root entities
      * @return List of created composite columns in order of specified entries
      */
-    public Map<String, List<Object>> processEntries(List<Object> rootEntities)
+    public Map<String, List<Object>> processEntries(List<?> rootEntities)
     {
-
         // set columns in new table for entity
         Map<String, List<Object>> resultsForEntity = new HashMap<>();
 
@@ -101,52 +103,40 @@ public class CompositeColumnCreator
             List<Object> res1Prop = new ArrayList<>();
             List<Object> res2Prop = new ArrayList<>();
 
-            try
+            // Get first list of entities containing the property to be combined.
+            List<Object> res1 = EntityUtils.traverseSingularForeignKeyPath(rootEntities, entry.getForeignKeyPath1());
+
+            // Get second list of entities containing the property to be combined.
+            List<Object> res2 = EntityUtils.traverseSingularForeignKeyPath(rootEntities, entry.getForeignKeyPath2());
+
+            // Get list of property values for both columns forming the composite column.
+            for (Object r : res1)
             {
-
-                // Get first list of entities containing the property to be combined.
-                List<Object> res1 = rootEntities;
-                for (String s : entry.getForeignKeyPath1())
+                try
                 {
-                    List<Object> resNxt = new ArrayList<>();
-                    for (Object r : res1)
-                    {
-                        resNxt.add(new PropertyDescriptor(s, r.getClass()).getReadMethod().invoke(r));
-                    }
-                    res1 = resNxt;
+                    res1Prop.add(PropertyUtils.getProperty(r, entry.getProperty1()));
                 }
-
-                // Get second list of entities containing the property to be combined.
-                List<Object> res2 = rootEntities;
-                for (String s : entry.getForeignKeyPath2())
+                catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
                 {
-                    List<Object> resNxt = new ArrayList<>();
-                    for (Object r : res2)
-                    {
-                        resNxt.add(new PropertyDescriptor(s, r.getClass()).getReadMethod().invoke(r));
-                    }
-                    res2 = resNxt;
-                }
-
-                // Get list of property values for both columns forming the composite column.
-                for (Object r : res1)
-                {
-                    res1Prop.add(new PropertyDescriptor(entry.getProperty1(), r.getClass()).getReadMethod().invoke(r));
-                }
-
-                for (Object r : res2)
-                {
-                    res2Prop.add(new PropertyDescriptor(entry.getProperty2(), r.getClass()).getReadMethod().invoke(r));
+                    throw new ValidationCoreException("Error accessing property '%s'".formatted(entry.getProperty1()));
                 }
             }
-            catch (IntrospectionException | IllegalAccessException | InvocationTargetException e)
+
+            for (Object r : res2)
             {
-                return new HashMap<>();
+                try
+                {
+                    res2Prop.add(PropertyUtils.getProperty(r, entry.getProperty2()));
+                }
+                catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+                {
+                    throw new ValidationCoreException("Error accessing property '%s'".formatted(entry.getProperty2()));
+                }
             }
 
             if (res1Prop.size() != res2Prop.size())
             {
-                throw new IllegalArgumentException("Size of columns forming the composite column is not equal.");
+                throw new ValidationCoreException("Size of columns forming the composite column is not equal.");
             }
 
             // Combine properties of entities.

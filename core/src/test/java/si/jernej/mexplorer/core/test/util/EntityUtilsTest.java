@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.util.EntityUtils;
 import si.jernej.mexplorer.entity.AdmissionsEntity;
+import si.jernej.mexplorer.entity.PatientsEntity;
 import si.jernej.mexplorer.test.ATestBase;
 
 public class EntityUtilsTest extends ATestBase
@@ -110,5 +111,44 @@ public class EntityUtilsTest extends ATestBase
 
         Assertions.assertEquals(expectedIds.size(), ids.size());
         Assertions.assertEquals(expectedIds, ids);
+    }
+
+    @Test
+    void testTraverseSingularForeignKeyPath()
+    {
+        long hadmId = 100006;
+        Object testAdmission = em.createQuery("SELECT a FROM AdmissionsEntity a WHERE a.hadmId=:hadmId", AdmissionsEntity.class)
+                .setParameter("hadmId", hadmId)
+                .getSingleResult();
+        Object res = EntityUtils.traverseSingularForeignKeyPath(testAdmission, List.of("AdmissionsEntity", "PatientsEntity"));
+        Assertions.assertInstanceOf(PatientsEntity.class, res);
+        Assertions.assertEquals(9895L, ((PatientsEntity) res).getSubjectId());
+    }
+
+    @Test
+    void testTraverseSingularForeignKeyPathMultiple()
+    {
+        List<Long> hadmIds = List.of(100001L, 100003L, 100006L, 100007L);
+
+        Map<Long, Long> hadmIdToExpectedLinkedSubjectId = Map.ofEntries(
+                Map.entry(100001L, 58526L),
+                Map.entry(100003L, 54610L),
+                Map.entry(100006L, 9895L),
+                Map.entry(100007L, 23018L)
+        );
+
+        List<AdmissionsEntity> admissionEntitys = em.createQuery("SELECT a FROM AdmissionsEntity a WHERE a.hadmId IN (:hadmIds)", AdmissionsEntity.class)
+                .setParameter("hadmIds", hadmIds)
+                .getResultList();
+
+        List<Long> hadmIdsExtracted = admissionEntitys.stream().map(AdmissionsEntity::getHadmId).toList();
+
+        List<Object> res = EntityUtils.traverseSingularForeignKeyPath(admissionEntitys, List.of("AdmissionsEntity", "PatientsEntity"));
+
+        for (int i = 0; i < hadmIdsExtracted.size(); i++)
+        {
+            Assertions.assertEquals(hadmIdToExpectedLinkedSubjectId.get(hadmIdsExtracted.get(i)), ((PatientsEntity) (res.get(i))).getSubjectId());
+        }
+
     }
 }
