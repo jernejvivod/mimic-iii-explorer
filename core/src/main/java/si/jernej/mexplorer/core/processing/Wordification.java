@@ -17,7 +17,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import javax.ejb.Stateless;
-import javax.enterprise.context.Dependent;
 import javax.persistence.Table;
 import javax.ws.rs.InternalServerErrorException;
 
@@ -88,7 +87,7 @@ public class Wordification
                     // if property should be included as a word
                     if (propertySpec.containsEntry(entityName, propertyDescriptor.getName()))
                     {
-                        wordsForEntity.add(String.format("%s_%s_%s", entityName, propertyDescriptor.getName(), valueTransformer.applyTransform(entityName, propertyDescriptor.getName(), nxtProperty)).toLowerCase());
+                        wordsForEntity.add("%s@%s@%s".formatted(entityName, propertyDescriptor.getName(), valueTransformer.applyTransform(entityName, propertyDescriptor.getName(), nxtProperty)).toLowerCase().replace(' ', '_'));
                     }
                     // if property collection of linked entities
                     else if (nxtProperty instanceof Collection && !((Collection<?>) nxtProperty).isEmpty())
@@ -126,7 +125,7 @@ public class Wordification
         // Add values from composite columns.
         Map<String, List<Object>> compositeColumns = compositeColumnCreator.processEntries(Collections.singletonList(rootEntity));
         List<String> wordsForComposite = new ArrayList<>();
-        compositeColumns.forEach((k, l) -> l.forEach(v -> wordsForComposite.add(String.format("%s_%s_%s", COMPOSITE_TABLE_NAME, k, valueTransformer.applyTransform(COMPOSITE_TABLE_NAME, k, v)).toLowerCase())));
+        compositeColumns.forEach((k, l) -> l.forEach(v -> wordsForComposite.add(String.format("%s@%s@%s", COMPOSITE_TABLE_NAME, k, valueTransformer.applyTransform(COMPOSITE_TABLE_NAME, k, v)).toLowerCase().replace(' ', '_'))));
 
         // Add all words and concatenations for composite table to results list.
         wordsAll.addAll(addConcatenations(wordsForComposite, concatenationScheme));
@@ -172,7 +171,7 @@ public class Wordification
         {
             for (int j = i + 1; j < words.size(); j++)
             {
-                wordsWithConcatenations.add(String.format("%s__%s", words.get(i), words.get(j)));
+                wordsWithConcatenations.add(String.format("%s@@%s", words.get(i), words.get(j)));
             }
         }
     }
@@ -188,7 +187,7 @@ public class Wordification
             {
                 for (int k = j + 1; k < words.size(); k++)
                 {
-                    wordsWithConcatenations.add(String.format("%s__%s__%s", words.get(i), words.get(j), words.get(k)));
+                    wordsWithConcatenations.add(String.format("%s@@%s@@%s", words.get(i), words.get(j), words.get(k)));
                 }
             }
         }

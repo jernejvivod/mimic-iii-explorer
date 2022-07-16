@@ -77,10 +77,10 @@ class WordificationTest extends ATestBase
     void basic()
     {
         Set<String> expectedWords = Set.of(
-                "admissionsentity_admissiontype_admissiontypestring",
-                "admissionsentity_insurance_insurancestring",
-                "patientsentity_dod_2022-04-18t08:00",
-                "patientsentity_gender_genderstring"
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring"
         );
 
         PropertySpec propertySpec = new PropertySpec();
@@ -99,12 +99,12 @@ class WordificationTest extends ATestBase
     void basicOneConcatenation()
     {
         Set<String> expectedWords = Set.of(
-                "admissionsentity_admissiontype_admissiontypestring",
-                "admissionsentity_insurance_insurancestring",
-                "admissionsentity_admissiontype_admissiontypestring__admissionsentity_insurance_insurancestring",
-                "patientsentity_dod_2022-04-18t08:00",
-                "patientsentity_gender_genderstring",
-                "patientsentity_dod_2022-04-18t08:00__patientsentity_gender_genderstring"
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "admissionsentity@admissiontype@admissiontypestring@@admissionsentity@insurance@insurancestring",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring",
+                "patientsentity@dod@2022-04-18t08:00@@patientsentity@gender@genderstring"
         );
 
         PropertySpec propertySpec = new PropertySpec();
@@ -123,12 +123,12 @@ class WordificationTest extends ATestBase
     void basicTwoConcatenation()
     {
         Set<String> expectedWords = Set.of(
-                "admissionsentity_admissiontype_admissiontypestring",
-                "admissionsentity_insurance_insurancestring",
-                "admissionsentity_admissiontype_admissiontypestring__admissionsentity_insurance_insurancestring",
-                "patientsentity_dod_2022-04-18t08:00",
-                "patientsentity_gender_genderstring",
-                "patientsentity_dod_2022-04-18t08:00__patientsentity_gender_genderstring"
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "admissionsentity@admissiontype@admissiontypestring@@admissionsentity@insurance@insurancestring",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring",
+                "patientsentity@dod@2022-04-18t08:00@@patientsentity@gender@genderstring"
         );
 
         PropertySpec propertySpec = new PropertySpec();

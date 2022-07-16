@@ -118,9 +118,9 @@ public class PropositionalizationServiceTest extends ATestBase
         List<WordificationResultDto> results = propositionalizationService.computeWordification(wordificationConfigDto);
 
         Set<String> expectedWords = Set.of(
-                "admissionsentity_insurance_private",
-                "admissionsentity_language_engl",
-                "admissionsentity_religion_protestant quaker"
+                "admissionsentity@insurance@private",
+                "admissionsentity@language@engl",
+                "admissionsentity@religion@protestant_quaker"
         );
 
         Assertions.assertEquals(1, results.size());
@@ -161,11 +161,11 @@ public class PropositionalizationServiceTest extends ATestBase
         List<WordificationResultDto> results = propositionalizationService.computeWordification(wordificationConfigDto);
 
         Set<String> expectedWords = Set.of(
-                "admissionsentity_insurance_private",
-                "admissionsentity_language_engl",
-                "admissionsentity_religion_protestant quaker",
-                "patientsentity_expireflag_0",
-                "patientsentity_gender_f"
+                "admissionsentity@insurance@private",
+                "admissionsentity@language@engl",
+                "admissionsentity@religion@protestant_quaker",
+                "patientsentity@expireflag@0",
+                "patientsentity@gender@f"
         );
 
         Assertions.assertEquals(1, results.size());
