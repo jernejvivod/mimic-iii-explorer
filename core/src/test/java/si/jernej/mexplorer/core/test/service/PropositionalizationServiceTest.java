@@ -213,7 +213,7 @@ public class PropositionalizationServiceTest extends ATestBase
         compositeColumnsSpecEntryDto.setProperty1("dob");
         compositeColumnsSpecEntryDto.setProperty2("admitTime");
         compositeColumnsSpecEntryDto.setCompositeName("ageAtAdmission");
-        compositeColumnsSpecEntryDto.setCombiner(CompositeColumnsSpecEntryDto.CombinerEnum.YEAR_DIFF);
+        compositeColumnsSpecEntryDto.setCombiner(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF);
 
         compositeColumnsSpecDto.addEntriesItem(compositeColumnsSpecEntryDto);
 
@@ -227,7 +227,7 @@ public class PropositionalizationServiceTest extends ATestBase
                 "admissionsentity@religion@protestant_quaker",
                 "patientsentity@expireflag@0",
                 "patientsentity@gender@f",
-                "composite@ageatadmission@35"
+                "composite@ageatadmission@35_5_21"
         );
 
         Assertions.assertEquals(1, results.size());

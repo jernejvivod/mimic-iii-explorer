@@ -2,7 +2,6 @@ package si.jernej.mexplorer.core.util;
 
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +51,7 @@ public final class DtoConverter
         DATE_DIFF((x, y) -> {
             Period period = Period.between(((LocalDateTime) x).toLocalDate(), ((LocalDateTime) y).toLocalDate());
             return "%s %s %s".formatted(period.getYears(), period.getMonths(), period.getDays());
-        }),
-        YEAR_DIFF((x, y) -> ChronoUnit.YEARS.between((LocalDateTime) x, (LocalDateTime) y));
+        });
 
         private final BinaryOperator<Object> binaryOperator;
 
@@ -70,8 +68,7 @@ public final class DtoConverter
 
     // mapping of concatenation scheme specification enums
     private static final Map<CompositeColumnsSpecEntryDto.CombinerEnum, CombinerEnum> combinerEnumMapping = new EnumMap<>(Map.ofEntries(
-            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF, CombinerEnum.DATE_DIFF),
-            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.YEAR_DIFF, CombinerEnum.YEAR_DIFF)
+            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF, CombinerEnum.DATE_DIFF)
     ));
 
     /**
