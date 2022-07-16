@@ -83,7 +83,7 @@ public class PropositionalizationService
                 .orElse(new ValueTransformer());
 
         CompositeColumnCreator compositeColumnCreator = Optional.ofNullable(wordificationConfigDto.getCompositeColumnsSpec())
-                .map(s -> DtoConverter.toCompositeColumnCreator(rootEntityName, s))
+                .map(s -> DtoConverter.toCompositeColumnCreator(rootEntityName, s, mimicEntityManager.getMetamodel()))
                 .orElse(new CompositeColumnCreator());
 
         // initialize list for storing wordification results

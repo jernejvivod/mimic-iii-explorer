@@ -27,6 +27,7 @@ class ValueTransformerTest
     private static Map<String, Map<TransformDto.DateDiffRoundTypeEnum, String>> dateDiffValuesToResults;
     private static List<String> dateDiffValues;
 
+    // TODO remove last value (seconds)
     @BeforeAll
     static void initDateDiffValues()
     {
