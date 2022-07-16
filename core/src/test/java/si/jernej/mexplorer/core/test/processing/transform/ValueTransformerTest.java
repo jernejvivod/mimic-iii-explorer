@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
@@ -24,11 +24,11 @@ import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecEntryDto
 class ValueTransformerTest
 {
 
-    private Map<String, Map<TransformDto.DateDiffRoundTypeEnum, String>> dateDiffValuesToResults;
-    private List<String> dateDiffValues;
+    private static Map<String, Map<TransformDto.DateDiffRoundTypeEnum, String>> dateDiffValuesToResults;
+    private static List<String> dateDiffValues;
 
-    @BeforeEach
-    void initDateDiffValues()
+    @BeforeAll
+    static void initDateDiffValues()
     {
         dateDiffValues = List.of("0 0 0 0", "0 0 0 1", "1 0 0 0", "80 3 1 12", "77 12 3 2", "113 1 4 8");
 

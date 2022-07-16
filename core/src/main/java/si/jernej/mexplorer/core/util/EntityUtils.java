@@ -157,6 +157,7 @@ public final class EntityUtils
             {
                 try
                 {
+                    //noinspection unchecked
                     res.add((T) MethodUtils.invokeMethod(endEntity, idMethodName, null));
                 }
                 catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
@@ -195,6 +196,10 @@ public final class EntityUtils
                     {
                         newEntities.addAll((Collection<?>) PropertyUtils.getProperty(object, keyPlural));
                     }
+                    else
+                    {
+                        throw new ValidationCoreException("Non-existent key '%s'".formatted(foreignKeyPath.get(i)));
+                    }
                 }
                 catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
                 {
@@ -204,5 +209,35 @@ public final class EntityUtils
             objects = newEntities;
         }
         return objects;
+    }
+
+    public static Object traverseSingularForeignKeyPath(Object rootEntity, List<String> foreignKeyPath)
+    {
+        Object object = rootEntity;
+        for (int i = 1; i < foreignKeyPath.size(); i++)
+        {
+            String key = EntityUtils.entityNameToPropertyName(foreignKeyPath.get(i), true);
+            try
+            {
+                if (PropertyUtils.isReadable(object, key))
+                {
+                    object = PropertyUtils.getProperty(object, key);
+                }
+                else
+                {
+                    throw new ValidationCoreException("Non-existent singular key '%s'".formatted(foreignKeyPath.get(i)));
+                }
+            }
+            catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+            {
+                throw new ValidationCoreException("Error applying singular key '%s'".formatted(foreignKeyPath.get(i)));
+            }
+        }
+        return object;
+    }
+
+    public static List<Object> traverseSingularForeignKeyPath(List<?> rootEntitys, List<String> foreignKeyPath)
+    {
+        return rootEntitys.stream().map(e -> traverseSingularForeignKeyPath(e, foreignKeyPath)).toList();
     }
 }
