@@ -1,8 +1,8 @@
 package si.jernej.mexplorer.core.util;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +11,7 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceContext;
+import javax.persistence.metamodel.Metamodel;
 import javax.ws.rs.BadRequestException;
 
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
@@ -29,12 +25,8 @@ import si.jernej.mexplorer.processorapi.v1.model.TransformDto;
 import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecDto;
 import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecEntryDto;
 
-@Stateless
 public final class DtoConverter
 {
-    @PersistenceContext
-    private static EntityManager em;
-
     private DtoConverter()
     {
         throw new IllegalStateException("This class should not be instantiated");
@@ -58,11 +50,10 @@ public final class DtoConverter
     public enum CombinerEnum
     {
         DATE_DIFF((x, y) -> {
-            final int SECONDS_IN_HOUR = 3600;
             Period period = Period.between(((LocalDateTime) x).toLocalDate(), ((LocalDateTime) y).toLocalDate());
-            Duration duration = Duration.between((LocalDateTime) x, (LocalDateTime) y);
-            return String.format("%s %s %s %s", period.getYears(), period.getMonths(), period.getDays(), duration.getSeconds() / SECONDS_IN_HOUR);
-        });
+            return "%s %s %s".formatted(period.getYears(), period.getMonths(), period.getDays());
+        }),
+        YEAR_DIFF((x, y) -> ChronoUnit.YEARS.between((LocalDateTime) x, (LocalDateTime) y));
 
         private final BinaryOperator<Object> binaryOperator;
 
@@ -79,7 +70,8 @@ public final class DtoConverter
 
     // mapping of concatenation scheme specification enums
     private static final Map<CompositeColumnsSpecEntryDto.CombinerEnum, CombinerEnum> combinerEnumMapping = new EnumMap<>(Map.ofEntries(
-            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF, CombinerEnum.DATE_DIFF)
+            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF, CombinerEnum.DATE_DIFF),
+            Map.entry(CompositeColumnsSpecEntryDto.CombinerEnum.YEAR_DIFF, CombinerEnum.YEAR_DIFF)
     ));
 
     /**
@@ -144,13 +136,12 @@ public final class DtoConverter
      *
      * @param rootEntityName name of root entity
      * @param compositeColumnsSpecDto model for the instance
+     * @param metamodel {@link Metamodel} instance
      * @return initialized {@link CompositeColumnCreator} instance that can be used in {@link si.jernej.mexplorer.core.processing.Wordification}
      */
-    public static CompositeColumnCreator toCompositeColumnCreator(String rootEntityName, CompositeColumnsSpecDto compositeColumnsSpecDto)
+    public static CompositeColumnCreator toCompositeColumnCreator(String rootEntityName, CompositeColumnsSpecDto compositeColumnsSpecDto, Metamodel metamodel)
     {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("primary");
-
-        Map<String, Set<String>> entityToLinkedEntities = EntityUtils.computeEntityToLinkedEntitiesMap(emf.getMetamodel());
+        Map<String, Set<String>> entityToLinkedEntities = EntityUtils.computeEntityToLinkedEntitiesMap(metamodel);
 
         CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();
         for (CompositeColumnsSpecEntryDto entry : compositeColumnsSpecDto.getEntries())

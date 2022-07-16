@@ -219,6 +219,7 @@ components:
           type: string
           enum:
             - DATE_DIFF
+            - YEAR_DIFF
     RootEntitiesSpec:
       type: object
       required:
