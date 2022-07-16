@@ -23,23 +23,20 @@ import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecEntryDto
 
 class ValueTransformerTest
 {
-
     private static Map<String, Map<TransformDto.DateDiffRoundTypeEnum, String>> dateDiffValuesToResults;
     private static List<String> dateDiffValues;
 
-    // TODO remove last value (seconds)
     @BeforeAll
     static void initDateDiffValues()
     {
-        dateDiffValues = List.of("0 0 0 0", "0 0 0 1", "1 0 0 0", "80 3 1 12", "77 12 3 2", "113 1 4 8");
+        dateDiffValues = List.of("0 0 0", "1 0 0", "80 3 1", "77 12 3", "113 1 4");
 
         dateDiffValuesToResults = Map.ofEntries(
-                Map.entry("0 0 0 0", Map.of(YEAR, "0", FIVE_YEARS, "0", TEN_YEARS, "0", FIFTEEN_YEARS, "0", TWENTY_YEARS, "0")),
-                Map.entry("0 0 0 1", Map.of(YEAR, "0", FIVE_YEARS, "0", TEN_YEARS, "0", FIFTEEN_YEARS, "0", TWENTY_YEARS, "0")),
-                Map.entry("1 0 0 0", Map.of(YEAR, "1", FIVE_YEARS, "0", TEN_YEARS, "0", FIFTEEN_YEARS, "0", TWENTY_YEARS, "0")),
-                Map.entry("80 3 1 12", Map.of(YEAR, "80", FIVE_YEARS, "80", TEN_YEARS, "80", FIFTEEN_YEARS, "75", TWENTY_YEARS, "80")),
-                Map.entry("77 12 3 2", Map.of(YEAR, "77", FIVE_YEARS, "75", TEN_YEARS, "80", FIFTEEN_YEARS, "75", TWENTY_YEARS, "80")),
-                Map.entry("113 1 4 8", Map.of(YEAR, "113", FIVE_YEARS, "115", TEN_YEARS, "110", FIFTEEN_YEARS, "120", TWENTY_YEARS, "120"))
+                Map.entry("0 0 0", Map.of(YEAR, "0", FIVE_YEARS, "0", TEN_YEARS, "0", FIFTEEN_YEARS, "0", TWENTY_YEARS, "0")),
+                Map.entry("1 0 0", Map.of(YEAR, "1", FIVE_YEARS, "0", TEN_YEARS, "0", FIFTEEN_YEARS, "0", TWENTY_YEARS, "0")),
+                Map.entry("80 3 1", Map.of(YEAR, "80", FIVE_YEARS, "80", TEN_YEARS, "80", FIFTEEN_YEARS, "75", TWENTY_YEARS, "80")),
+                Map.entry("77 12 3", Map.of(YEAR, "77", FIVE_YEARS, "75", TEN_YEARS, "80", FIFTEEN_YEARS, "75", TWENTY_YEARS, "80")),
+                Map.entry("113 1 4", Map.of(YEAR, "113", FIVE_YEARS, "115", TEN_YEARS, "110", FIFTEEN_YEARS, "120", TWENTY_YEARS, "120"))
         );
     }
 
@@ -73,14 +70,12 @@ class ValueTransformerTest
         String res6 = (String) valueTransformer.applyTransform("TestEntity", "testProperty", dateDiffValues.get(2));
         String res7 = (String) valueTransformer.applyTransform("TestEntity", "testProperty", dateDiffValues.get(3));
         String res8 = (String) valueTransformer.applyTransform("TestEntity", "testProperty", dateDiffValues.get(4));
-        String res9 = (String) valueTransformer.applyTransform("TestEntity", "testProperty", dateDiffValues.get(5));
 
         Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(0)).get(YEAR), res4);
         Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(1)).get(YEAR), res5);
         Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(2)).get(YEAR), res6);
         Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(3)).get(YEAR), res7);
         Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(4)).get(YEAR), res8);
-        Assertions.assertEquals(dateDiffValuesToResults.get(dateDiffValues.get(5)).get(YEAR), res9);
     }
 
     @Test

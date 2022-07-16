@@ -180,4 +180,49 @@ class WordificationTest extends ATestBase
         Assertions.assertEquals(expectedWords, new HashSet<>(words));
     }
 
+    @Test
+    void basicWithValueTransformer()
+    {
+
+    }
+
+    @Test
+    void basicWithCompositeColumnCreatorAndValueTransformer()
+    {
+        Set<String> expectedWords = Set.of(
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "admissionsentity@admissiontype@admissiontypestring@@admissionsentity@insurance@insurancestring",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring",
+                "patientsentity@dod@2022-04-18t08:00@@patientsentity@gender@genderstring",
+                "composite@ageatadmission@60"
+        );
+
+        PropertySpec propertySpec = new PropertySpec();
+        propertySpec.addEntry("AdmissionsEntity", List.of("admissionType", "insurance"));
+        propertySpec.addEntry("PatientsEntity", List.of("gender", "dod"));
+
+        ValueTransformer valueTransformer = new ValueTransformer();
+        valueTransformer.addTransform(
+                "composite",
+                "ageAtAdmission",
+                x -> String.valueOf((long) (20.0 * Math.round(((long) x) / 20.0)))
+        );
+
+        CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();
+        compositeColumnCreator.addEntry(
+                List.of("AdmissionsEntity"),
+                "admitTime",
+                List.of("AdmissionsEntity", "PatientsEntity"),
+                "dob",
+                "ageAtAdmission",
+                (dateAdmission, dateBirth) -> ChronoUnit.YEARS.between((LocalDateTime) dateBirth, (LocalDateTime) dateAdmission)
+        );
+
+        List<String> words = wordification.wordify(rootAdmissionsEntity, propertySpec, valueTransformer, compositeColumnCreator, Wordification.ConcatenationScheme.TWO);
+
+        Assertions.assertEquals(expectedWords, new HashSet<>(words));
+    }
+
 }
