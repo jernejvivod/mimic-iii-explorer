@@ -21,6 +21,7 @@ import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
 import si.jernej.mexplorer.core.service.TargetExtractionService;
+import si.jernej.mexplorer.core.util.DtoConverter;
 import si.jernej.mexplorer.entity.AdmissionsEntity;
 import si.jernej.mexplorer.entity.PatientsEntity;
 import si.jernej.mexplorer.test.ATestBase;
@@ -181,12 +182,6 @@ class WordificationTest extends ATestBase
     }
 
     @Test
-    void basicWithValueTransformer()
-    {
-
-    }
-
-    @Test
     void basicWithCompositeColumnCreatorAndValueTransformer()
     {
         Set<String> expectedWords = Set.of(
@@ -207,17 +202,17 @@ class WordificationTest extends ATestBase
         valueTransformer.addTransform(
                 "composite",
                 "ageAtAdmission",
-                x -> String.valueOf((long) (20.0 * Math.round(((long) x) / 20.0)))
+                x -> String.valueOf((int) 20.0 * Math.round(Double.parseDouble(((String) x).split(" ")[0]) / 20.0))
         );
 
         CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();
         compositeColumnCreator.addEntry(
-                List.of("AdmissionsEntity"),
-                "admitTime",
                 List.of("AdmissionsEntity", "PatientsEntity"),
                 "dob",
+                List.of("AdmissionsEntity"),
+                "admitTime",
                 "ageAtAdmission",
-                (dateAdmission, dateBirth) -> ChronoUnit.YEARS.between((LocalDateTime) dateBirth, (LocalDateTime) dateAdmission)
+                DtoConverter.CombinerEnum.DATE_DIFF.getBinaryOperator()
         );
 
         List<String> words = wordification.wordify(rootAdmissionsEntity, propertySpec, valueTransformer, compositeColumnCreator, Wordification.ConcatenationScheme.TWO);
