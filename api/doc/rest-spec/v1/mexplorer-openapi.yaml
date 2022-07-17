@@ -269,12 +269,12 @@ components:
         kind:
           type: string
           enum:
-            - DISCRETIZATION
+            - ROUNDING
             - DATE_DIFF_ROUND
-        discretizationType:
-          type: string
-          enum:
-            - HISTOGRAM_ANALYSIS
+        roundingMultiple:
+          type: number
+          format: double
+          example: 20.0
         dateDiffRoundType:
           type: string
           enum:

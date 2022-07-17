@@ -37,6 +37,7 @@ public class AdmissionsEntity implements Serializable
     private Short hospitalExpireFlag;   // ?
     private short hasChartEventsData;   // hospital admission has at least one observation in the chartevents table
     private Set<NoteEventsEntity> noteEventsEntitys;
+    private Set<IcuStaysEntity> icuStaysEntitys;
 
     @Id
     @Column(name = "row_id", nullable = false)
@@ -54,7 +55,7 @@ public class AdmissionsEntity implements Serializable
     @JoinColumn(name = "subject_id", referencedColumnName = "subject_id")
     public PatientsEntity getPatientsEntity()
     {
-       return patientsEntity;
+        return patientsEntity;
     }
 
     public void setPatientsEntity(PatientsEntity patientsEntity)
@@ -249,7 +250,7 @@ public class AdmissionsEntity implements Serializable
         this.hasChartEventsData = hasCharteventsData;
     }
 
-    @OneToMany(mappedBy="admissionsEntity", targetEntity = NoteEventsEntity.class)
+    @OneToMany(mappedBy = "admissionsEntity", targetEntity = NoteEventsEntity.class)
     public Set<NoteEventsEntity> getNoteEventsEntitys()
     {
         return noteEventsEntitys;
@@ -258,5 +259,16 @@ public class AdmissionsEntity implements Serializable
     public void setNoteEventsEntitys(Set<NoteEventsEntity> noteeventsEntitys)
     {
         this.noteEventsEntitys = noteeventsEntitys;
+    }
+
+    @OneToMany(mappedBy = "admissionsEntity", targetEntity = IcuStaysEntity.class)
+    public Set<IcuStaysEntity> getIcuStaysEntitys()
+    {
+        return icuStaysEntitys;
+    }
+
+    public void setIcuStaysEntitys(Set<IcuStaysEntity> icuStaysEntitys)
+    {
+        this.icuStaysEntitys = icuStaysEntitys;
     }
 }

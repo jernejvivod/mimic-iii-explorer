@@ -311,4 +311,98 @@ public class PropositionalizationServiceTest extends ATestBase
         Assertions.assertEquals(expectedWords, new HashSet<>(results.get(0).getWords()));
     }
 
+    @Test
+    public void testComputeWordificationSimpleTwoLinkedEntitiesWithValueTransformerRounding()
+    {
+        WordificationConfigDto wordificationConfigDto = new WordificationConfigDto();
+
+        RootEntitiesSpecDto rootEntitiesSpecDto = new RootEntitiesSpecDto();
+        rootEntitiesSpecDto.setRootEntity("AdmissionsEntity");
+        rootEntitiesSpecDto.setIdProperty("hadmId");
+        rootEntitiesSpecDto.setIds(List.of(100001L));
+
+        wordificationConfigDto.setRootEntitiesSpec(rootEntitiesSpecDto);
+
+        PropertySpecDto propertySpecDto = new PropertySpecDto();
+
+        PropertySpecEntryDto propertySpecEntryDto1 = new PropertySpecEntryDto();
+        propertySpecEntryDto1.setEntity("AdmissionsEntity");
+        propertySpecEntryDto1.setProperties(List.of("insurance", "language", "religion"));
+        propertySpecDto.addEntriesItem(propertySpecEntryDto1);
+
+        PropertySpecEntryDto propertySpecEntryDto2 = new PropertySpecEntryDto();
+        propertySpecEntryDto2.setEntity("PatientsEntity");
+        propertySpecEntryDto2.setProperties(List.of("gender", "expireFlag"));
+        propertySpecDto.addEntriesItem(propertySpecEntryDto2);
+
+        PropertySpecEntryDto propertySpecEntryDto3 = new PropertySpecEntryDto();
+        propertySpecEntryDto3.setEntity("IcuStaysEntity");
+        propertySpecEntryDto3.setProperties(List.of("firstCareUnit", "lastCareUnit", "los"));
+        propertySpecDto.addEntriesItem(propertySpecEntryDto3);
+
+        wordificationConfigDto.setPropertySpec(propertySpecDto);
+
+        ConcatenationSpecDto concatenationSpecDto = new ConcatenationSpecDto();
+        concatenationSpecDto.setConcatenationScheme(ConcatenationSpecDto.ConcatenationSchemeEnum.ZERO);
+
+        wordificationConfigDto.setConcatenationSpec(concatenationSpecDto);
+
+        CompositeColumnsSpecDto compositeColumnsSpecDto = new CompositeColumnsSpecDto();
+
+        CompositeColumnsSpecEntryDto compositeColumnsSpecEntryDto = new CompositeColumnsSpecEntryDto();
+        compositeColumnsSpecEntryDto.setTable1("PatientsEntity");
+        compositeColumnsSpecEntryDto.setTable2("AdmissionsEntity");
+        compositeColumnsSpecEntryDto.setProperty1("dob");
+        compositeColumnsSpecEntryDto.setProperty2("admitTime");
+        compositeColumnsSpecEntryDto.setCompositeName("ageAtAdmission");
+        compositeColumnsSpecEntryDto.setCombiner(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF);
+
+        compositeColumnsSpecDto.addEntriesItem(compositeColumnsSpecEntryDto);
+
+        wordificationConfigDto.setCompositeColumnsSpec(compositeColumnsSpecDto);
+
+        ValueTransformationSpecDto valueTransformationSpecDto = new ValueTransformationSpecDto();
+
+        ValueTransformationSpecEntryDto valueTransformationSpecEntryDto1 = new ValueTransformationSpecEntryDto();
+        valueTransformationSpecEntryDto1.setEntity("composite");
+        valueTransformationSpecEntryDto1.setProperty("ageAtAdmission");
+
+        TransformDto transformDto1 = new TransformDto();
+        transformDto1.setDateDiffRoundType(TransformDto.DateDiffRoundTypeEnum.TWENTY_YEARS);
+        transformDto1.setKind(TransformDto.KindEnum.DATE_DIFF_ROUND);
+        valueTransformationSpecEntryDto1.setTransform(transformDto1);
+
+        valueTransformationSpecDto.addEntriesItem(valueTransformationSpecEntryDto1);
+
+        ValueTransformationSpecEntryDto valueTransformationSpecEntryDto2 = new ValueTransformationSpecEntryDto();
+        valueTransformationSpecEntryDto2.setEntity("IcuStaysEntity");
+        valueTransformationSpecEntryDto2.setProperty("los");
+
+        TransformDto transformDto2 = new TransformDto();
+        transformDto2.setRoundingMultiple(1.0);
+        transformDto2.setKind(TransformDto.KindEnum.ROUNDING);
+        valueTransformationSpecEntryDto2.setTransform(transformDto2);
+
+        valueTransformationSpecDto.addEntriesItem(valueTransformationSpecEntryDto2);
+
+        wordificationConfigDto.setValueTransformationSpec(valueTransformationSpecDto);
+
+        List<WordificationResultDto> results = propositionalizationService.computeWordification(wordificationConfigDto);
+
+        Set<String> expectedWords = Set.of(
+                "admissionsentity@insurance@private",
+                "admissionsentity@language@engl",
+                "admissionsentity@religion@protestant_quaker",
+                "icustaysentity@firstcareunit@micu",
+                "icustaysentity@lastcareunit@micu",
+                "icustaysentity@los@4.0",
+                "patientsentity@expireflag@0",
+                "patientsentity@gender@f",
+                "composite@ageatadmission@40"
+        );
+
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertEquals(expectedWords, new HashSet<>(results.get(0).getWords()));
+    }
+
 }
