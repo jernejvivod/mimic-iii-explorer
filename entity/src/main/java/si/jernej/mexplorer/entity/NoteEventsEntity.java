@@ -17,7 +17,8 @@ import javax.persistence.Table;
 public class NoteEventsEntity implements Serializable
 {
     private Long rowId;
-    private Long subjectId;
+    // private Long subjectId;
+    private PatientsEntity patientsEntity;
     private AdmissionsEntity admissionsEntity;
     private Timestamp chartdate;
     private Timestamp charttime;
@@ -40,16 +41,16 @@ public class NoteEventsEntity implements Serializable
         this.rowId = rowId;
     }
 
-    @Basic
-    @Column(name = "subject_id", nullable = false)
-    public Long getSubjectId()
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id", referencedColumnName = "subject_id")
+    public PatientsEntity getPatientsEntity()
     {
-        return subjectId;
+        return patientsEntity;
     }
 
-    public void setSubjectId(Long subjectId)
+    public void setPatientsEntity(PatientsEntity patientsEntity)
     {
-        this.subjectId = subjectId;
+        this.patientsEntity = patientsEntity;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

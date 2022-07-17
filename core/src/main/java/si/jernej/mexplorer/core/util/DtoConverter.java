@@ -11,8 +11,8 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 
 import javax.persistence.metamodel.Metamodel;
-import javax.ws.rs.BadRequestException;
 
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
@@ -30,10 +30,6 @@ public final class DtoConverter
     {
         throw new IllegalStateException("This class should not be instantiated");
     }
-
-    private static final Map<TransformDto.DiscretizationTypeEnum, Function<Object, ?>> discretizationKindToTransformFunction = Map.ofEntries(
-            Map.entry(TransformDto.DiscretizationTypeEnum.HISTOGRAM_ANALYSIS, x -> x)  // TODO implement
-    );
 
     private static final Map<TransformDto.DateDiffRoundTypeEnum, Function<Object, ?>> dateDiffRoundTypeKindToTransformFunction = Map.ofEntries(
             Map.entry(TransformDto.DateDiffRoundTypeEnum.YEAR, x -> ((String) x).split(" ")[0]),
@@ -81,16 +77,16 @@ public final class DtoConverter
     {
         Function<Object, ?> res = null;
 
-        if (transformDto.getKind() == TransformDto.KindEnum.DISCRETIZATION)
+        if (transformDto.getKind() == TransformDto.KindEnum.ROUNDING)
         {
-            res = discretizationKindToTransformFunction.get(transformDto.getDiscretizationType());
+            res = x -> transformDto.getRoundingMultiple() * Math.round(((double) x) / transformDto.getRoundingMultiple());
         }
         else if (transformDto.getKind() == TransformDto.KindEnum.DATE_DIFF_ROUND)
         {
             res = dateDiffRoundTypeKindToTransformFunction.get(transformDto.getDateDiffRoundType());
         }
 
-        return Optional.ofNullable(res).orElseThrow(() -> new BadRequestException("Error setting value transformations"));
+        return Optional.ofNullable(res).orElseThrow(() -> new ValidationCoreException("Error setting value transformations"));
     }
 
     /**

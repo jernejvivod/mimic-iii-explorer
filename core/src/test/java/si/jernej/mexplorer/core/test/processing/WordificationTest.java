@@ -23,6 +23,7 @@ import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
 import si.jernej.mexplorer.core.service.TargetExtractionService;
 import si.jernej.mexplorer.core.util.DtoConverter;
 import si.jernej.mexplorer.entity.AdmissionsEntity;
+import si.jernej.mexplorer.entity.IcuStaysEntity;
 import si.jernej.mexplorer.entity.PatientsEntity;
 import si.jernej.mexplorer.test.ATestBase;
 
@@ -182,7 +183,7 @@ class WordificationTest extends ATestBase
     }
 
     @Test
-    void basicWithCompositeColumnCreatorAndValueTransformer()
+    void basicWithCompositeColumnCreatorAndValueTransformerDateDiff()
     {
         Set<String> expectedWords = Set.of(
                 "admissionsentity@admissiontype@admissiontypestring",
@@ -203,6 +204,64 @@ class WordificationTest extends ATestBase
                 "composite",
                 "ageAtAdmission",
                 x -> String.valueOf((int) 20.0 * Math.round(Double.parseDouble(((String) x).split(" ")[0]) / 20.0))
+        );
+
+        CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();
+        compositeColumnCreator.addEntry(
+                List.of("AdmissionsEntity", "PatientsEntity"),
+                "dob",
+                List.of("AdmissionsEntity"),
+                "admitTime",
+                "ageAtAdmission",
+                DtoConverter.CombinerEnum.DATE_DIFF.getBinaryOperator()
+        );
+
+        List<String> words = wordification.wordify(rootAdmissionsEntity, propertySpec, valueTransformer, compositeColumnCreator, Wordification.ConcatenationScheme.TWO);
+
+        Assertions.assertEquals(expectedWords, new HashSet<>(words));
+    }
+
+    @Test
+    void basicWithCompositeColumnCreatorAndValueTransformerRounding()
+    {
+        IcuStaysEntity icuStaysEntity = new IcuStaysEntity();
+        icuStaysEntity.setFirstCareUnit("firstCareUnitString");
+        icuStaysEntity.setLastCareUnit("lastCareUnitString");
+        icuStaysEntity.setLos(4.25);
+        rootAdmissionsEntity.setIcuStaysEntitys(new HashSet<>(Set.of(icuStaysEntity)));
+
+        Set<String> expectedWords = Set.of(
+                "admissionsentity@admissiontype@admissiontypestring",
+                "admissionsentity@insurance@insurancestring",
+                "admissionsentity@admissiontype@admissiontypestring@@admissionsentity@insurance@insurancestring",
+                "icustaysentity@firstcareunit@firstcareunitstring",
+                "icustaysentity@lastcareunit@lastcareunitstring",
+                "icustaysentity@los@4.0",
+                "icustaysentity@firstcareunit@firstcareunitstring@@icustaysentity@lastcareunit@lastcareunitstring",
+                "icustaysentity@firstcareunit@firstcareunitstring@@icustaysentity@los@4.0",
+                "icustaysentity@lastcareunit@lastcareunitstring@@icustaysentity@los@4.0",
+                "icustaysentity@firstcareunit@firstcareunitstring@@icustaysentity@lastcareunit@lastcareunitstring@@icustaysentity@los@4.0",
+                "patientsentity@dod@2022-04-18t08:00",
+                "patientsentity@gender@genderstring",
+                "patientsentity@dod@2022-04-18t08:00@@patientsentity@gender@genderstring",
+                "composite@ageatadmission@60"
+        );
+
+        PropertySpec propertySpec = new PropertySpec();
+        propertySpec.addEntry("AdmissionsEntity", List.of("admissionType", "insurance"));
+        propertySpec.addEntry("PatientsEntity", List.of("gender", "dod"));
+        propertySpec.addEntry("IcuStaysEntity", List.of("firstCareUnit", "lastCareUnit", "los"));
+
+        ValueTransformer valueTransformer = new ValueTransformer();
+        valueTransformer.addTransform(
+                "composite",
+                "ageAtAdmission",
+                x -> String.valueOf((int) 20.0 * Math.round(Double.parseDouble(((String) x).split(" ")[0]) / 20.0))
+        );
+        valueTransformer.addTransform(
+                "IcuStaysEntity",
+                "los",
+                x -> 1.0 * Math.round(((double) x) / 1.0)
         );
 
         CompositeColumnCreator compositeColumnCreator = new CompositeColumnCreator();

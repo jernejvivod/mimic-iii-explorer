@@ -67,13 +67,19 @@ public class Wordification
         {
             while (!bfsQueue.isEmpty())
             {
-
                 // Get next entity from queue and get its simple class name.
                 Object nxt = bfsQueue.remove();
                 String entityName = nxt.getClass().getSimpleName();
 
                 // Add to set of visited entities.
-                visitedEntities.add(entityName);
+                if (visitedEntities.contains(entityName))
+                {
+                    continue;
+                }
+                else
+                {
+                    visitedEntities.add(entityName);
+                }
 
                 // Initialize list for words obtained from next table.
                 List<String> wordsForEntity = new ArrayList<>();
