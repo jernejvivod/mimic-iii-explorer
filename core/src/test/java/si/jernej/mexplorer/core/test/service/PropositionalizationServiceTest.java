@@ -21,6 +21,9 @@ import si.jernej.mexplorer.processorapi.v1.model.ConcatenationSpecDto;
 import si.jernej.mexplorer.processorapi.v1.model.PropertySpecDto;
 import si.jernej.mexplorer.processorapi.v1.model.PropertySpecEntryDto;
 import si.jernej.mexplorer.processorapi.v1.model.RootEntitiesSpecDto;
+import si.jernej.mexplorer.processorapi.v1.model.TransformDto;
+import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecDto;
+import si.jernej.mexplorer.processorapi.v1.model.ValueTransformationSpecEntryDto;
 import si.jernej.mexplorer.processorapi.v1.model.WordificationConfigDto;
 import si.jernej.mexplorer.processorapi.v1.model.WordificationResultDto;
 import si.jernej.mexplorer.test.ATestBase;
@@ -175,7 +178,7 @@ public class PropositionalizationServiceTest extends ATestBase
     }
 
     @Test
-    public void testComputeWoridificationSimpleTwoLinkedEntitiesWithCompositeColumns()
+    public void testComputeWordificationSimpleTwoLinkedEntitiesWithCompositeColumns()
     {
         WordificationConfigDto wordificationConfigDto = new WordificationConfigDto();
 
@@ -228,6 +231,80 @@ public class PropositionalizationServiceTest extends ATestBase
                 "patientsentity@expireflag@0",
                 "patientsentity@gender@f",
                 "composite@ageatadmission@35_5_21"
+        );
+
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertEquals(expectedWords, new HashSet<>(results.get(0).getWords()));
+    }
+
+    @Test
+    public void testComputeWordificationSimpleTwoLinkedEntitiesWithCompositeColumnsAndValueTransformer()
+    {
+        WordificationConfigDto wordificationConfigDto = new WordificationConfigDto();
+
+        RootEntitiesSpecDto rootEntitiesSpecDto = new RootEntitiesSpecDto();
+        rootEntitiesSpecDto.setRootEntity("AdmissionsEntity");
+        rootEntitiesSpecDto.setIdProperty("hadmId");
+        rootEntitiesSpecDto.setIds(List.of(100001L));
+
+        wordificationConfigDto.setRootEntitiesSpec(rootEntitiesSpecDto);
+
+        PropertySpecDto propertySpecDto = new PropertySpecDto();
+
+        PropertySpecEntryDto propertySpecEntryDto1 = new PropertySpecEntryDto();
+        propertySpecEntryDto1.setEntity("AdmissionsEntity");
+        propertySpecEntryDto1.setProperties(List.of("insurance", "language", "religion"));
+        propertySpecDto.addEntriesItem(propertySpecEntryDto1);
+
+        PropertySpecEntryDto propertySpecEntryDto2 = new PropertySpecEntryDto();
+        propertySpecEntryDto2.setEntity("PatientsEntity");
+        propertySpecEntryDto2.setProperties(List.of("gender", "expireFlag"));
+        propertySpecDto.addEntriesItem(propertySpecEntryDto2);
+
+        wordificationConfigDto.setPropertySpec(propertySpecDto);
+
+        ConcatenationSpecDto concatenationSpecDto = new ConcatenationSpecDto();
+        concatenationSpecDto.setConcatenationScheme(ConcatenationSpecDto.ConcatenationSchemeEnum.ZERO);
+
+        wordificationConfigDto.setConcatenationSpec(concatenationSpecDto);
+
+        CompositeColumnsSpecDto compositeColumnsSpecDto = new CompositeColumnsSpecDto();
+
+        CompositeColumnsSpecEntryDto compositeColumnsSpecEntryDto = new CompositeColumnsSpecEntryDto();
+        compositeColumnsSpecEntryDto.setTable1("PatientsEntity");
+        compositeColumnsSpecEntryDto.setTable2("AdmissionsEntity");
+        compositeColumnsSpecEntryDto.setProperty1("dob");
+        compositeColumnsSpecEntryDto.setProperty2("admitTime");
+        compositeColumnsSpecEntryDto.setCompositeName("ageAtAdmission");
+        compositeColumnsSpecEntryDto.setCombiner(CompositeColumnsSpecEntryDto.CombinerEnum.DATE_DIFF);
+
+        compositeColumnsSpecDto.addEntriesItem(compositeColumnsSpecEntryDto);
+
+        wordificationConfigDto.setCompositeColumnsSpec(compositeColumnsSpecDto);
+
+        ValueTransformationSpecDto valueTransformationSpecDto = new ValueTransformationSpecDto();
+        ValueTransformationSpecEntryDto valueTransformationSpecEntryDto = new ValueTransformationSpecEntryDto();
+        valueTransformationSpecEntryDto.setEntity("composite");
+        valueTransformationSpecEntryDto.setProperty("ageAtAdmission");
+
+        TransformDto transformDto = new TransformDto();
+        transformDto.setDateDiffRoundType(TransformDto.DateDiffRoundTypeEnum.TWENTY_YEARS);
+        transformDto.setKind(TransformDto.KindEnum.DATE_DIFF_ROUND);
+        valueTransformationSpecEntryDto.setTransform(transformDto);
+
+        valueTransformationSpecDto.addEntriesItem(valueTransformationSpecEntryDto);
+
+        wordificationConfigDto.setValueTransformationSpec(valueTransformationSpecDto);
+
+        List<WordificationResultDto> results = propositionalizationService.computeWordification(wordificationConfigDto);
+
+        Set<String> expectedWords = Set.of(
+                "admissionsentity@insurance@private",
+                "admissionsentity@language@engl",
+                "admissionsentity@religion@protestant_quaker",
+                "patientsentity@expireflag@0",
+                "patientsentity@gender@f",
+                "composite@ageatadmission@40"
         );
 
         Assertions.assertEquals(1, results.size());
