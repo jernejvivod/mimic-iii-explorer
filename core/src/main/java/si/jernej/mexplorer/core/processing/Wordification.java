@@ -20,6 +20,9 @@ import javax.ejb.Stateless;
 import javax.persistence.Table;
 import javax.ws.rs.InternalServerErrorException;
 
+import org.apache.commons.beanutils.PropertyUtils;
+
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 import si.jernej.mexplorer.core.processing.spec.PropertySpec;
 import si.jernej.mexplorer.core.processing.transform.CompositeColumnCreator;
 import si.jernej.mexplorer.core.processing.transform.ValueTransformer;
@@ -103,7 +106,41 @@ public class Wordification
                         // If collection of linked entities that were not yet visited, add to queue.
                         if (!visitedEntities.contains(aClass.getSimpleName()) && aClass.isAnnotationPresent(Table.class))
                         {
-                            bfsQueue.addAll((Collection<?>) nxtProperty);
+                            if (propertySpec.containsSort(aClass.getSimpleName()))
+                            {
+                                bfsQueue.addAll(
+                                        ((Collection<?>) nxtProperty).stream().sorted(
+                                                (a, b) -> {
+                                                    try
+                                                    {
+                                                        Object prop1 = PropertyUtils.getProperty(a, propertySpec.getSortProperty(aClass.getSimpleName()));
+
+                                                        if (!(prop1 instanceof Comparable))
+                                                        {
+                                                            throw new ValidationCoreException("Values of property '%s' of entity '%s' must implement the Comparable interface"
+                                                                    .formatted(aClass.getSimpleName(), propertySpec.getSortProperty(aClass.getSimpleName()))
+                                                            );
+                                                        }
+
+                                                        Object prop2 = PropertyUtils.getProperty(b, propertySpec.getSortProperty(aClass.getSimpleName()));
+
+                                                        //noinspection unchecked
+                                                        return ((Comparable<Object>) prop1).compareTo(
+                                                                prop2
+                                                        );
+                                                    }
+                                                    catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e)
+                                                    {
+                                                        throw new ValidationCoreException("Error accessing sort property '%s' of entity '%s'".formatted(aClass.getSimpleName(), propertySpec.getSortProperty(aClass.getSimpleName())));
+                                                    }
+                                                }
+                                        ).toList()
+                                );
+                            }
+                            else
+                            {
+                                bfsQueue.addAll((Collection<?>) nxtProperty);
+                            }
                         }
                     }
                     else if (nxtProperty != null)
@@ -198,5 +235,4 @@ public class Wordification
             }
         }
     }
-
 }

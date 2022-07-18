@@ -4,7 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import si.jernej.mexplorer.core.exception.ValidationCoreException;
 
 /**
  * Class representing the specification of which properties of which entities to include for the
@@ -12,12 +15,13 @@ import java.util.Set;
  */
 public class PropertySpec
 {
-
     private final Map<String, Set<String>> entityToPropertiesToProcess;
+    private final Map<String, String> sortSpecs;
 
     public PropertySpec()
     {
         this.entityToPropertiesToProcess = new HashMap<>();
+        this.sortSpecs = new HashMap<>();
     }
 
     /**
@@ -52,6 +56,38 @@ public class PropertySpec
     public boolean containsEntry(String entity, String propertyName)
     {
         return this.entityToPropertiesToProcess.containsKey(entity) && this.entityToPropertiesToProcess.get(entity).contains(propertyName);
+    }
+
+    /**
+     * Add sort specification
+     *
+     * @param entity entity for which to apply the sorting
+     * @param property the property by which to sort
+     */
+    public void addSort(String entity, String property)
+    {
+        this.sortSpecs.put(entity, property);
+    }
+
+    /**
+     * Check if the entity contains a sort specification
+     *
+     * @param entity name of entity
+     */
+    public boolean containsSort(String entity)
+    {
+        return this.sortSpecs.containsKey(entity);
+    }
+
+    /**
+     * Get sort property for entity
+     *
+     * @param entity name of entity
+     */
+    public String getSortProperty(String entity)
+    {
+        return Optional.ofNullable(this.sortSpecs.get(entity))
+                .orElseThrow(() -> new ValidationCoreException("No sort property specified for entity '%s'".formatted(entity)));
     }
 
 }
